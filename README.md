@@ -49,13 +49,14 @@
     - [ ] Glyph position in vord
     - [ ] Glyph position in line (horiz)
     - [ ] Glyph position in paragraph (vert)
-    - [ ] Glyph position in manuscript ()
+    - [ ] Glyph position in manuscript
 - Vord
     - [ ] Vord token frequency rank
-    - [ ] Vord pair frequency rank
-    - [ ] Vord pair attraction (matrix) + symmetry (scalar)
+    - [ ] Vord token pair frequency rank
+    - [ ] Vord token pair attraction (matrix) + symmetry (scalar)
     - [ ] Vord token position in line (horiz)
     - [ ] Vord token position in paragraph (vert)
+    - [ ] Vord token position in manuscript
     - [ ] Vord & vord token length distribution
 - Entropy
     - [ ] Glyph entropy

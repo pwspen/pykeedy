@@ -67,9 +67,12 @@ def process(text: str, verbose: bool = True, save_to_fpath: str | None = None) -
             f.write(text)
     return text
 
+def get_processed_vms(basic_ver: bool = True) -> str:
+    return process(get_vms(basic_ver=basic_ver), verbose=False)
+
 def most_common_words(n: int = 50, lines: str | None = None) -> list[tuple[str, int]]:
     if lines is None:
         lines = process(get_vms())
     c = Counter(word for line in lines.split('\n') for word in line.split('.'))
     return c.most_common(50)
-print(most_common_words(100))
+

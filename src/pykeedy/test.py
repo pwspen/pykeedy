@@ -1,7 +1,10 @@
 from pykeedy.crypt import greshko_decrypt, encrypt, preprocess
+from pykeedy.utils import load_text, shannon, conditional
+from pykeedy.analysis import get_processed_vms
 import numpy as np
 
 def test_reconstruction(text: str, n: int = 1000) -> float:
+    
     def levenshtein(a, b):
         if len(a) < len(b):
             return levenshtein(b, a)
@@ -32,3 +35,9 @@ def test_reconstruction(text: str, n: int = 1000) -> float:
     rec = avg / n
     print(f"Reconstruction accuracy: {rec*100:.2f}% over {n} trials of text length {len(pre)}")
     return rec
+
+inferno = load_text("inferno").replace(' ', '')
+vms = get_processed_vms().replace('.', '')
+for text in (inferno, vms):
+    print(shannon(text))
+    print(conditional(text))
