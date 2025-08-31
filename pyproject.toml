@@ -1,13 +1,15 @@
 [project]
-name = "voynich"
-version = "0.1.0"
-description = "Add your description here"
+name = "pykeedy"
+version = "1.0.0"
+description = "Tools for working with and analyzing the Voynich Manuscript's text"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
+    "matplotlib>=3.10.6",
     "numpy>=2.3.2",
     "pydantic>=2.11.7",
     "pyyaml>=6.0.2",
+    "regex>=2025.8.29",
 ]
 
 [tool.setuptools]

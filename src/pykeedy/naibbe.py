@@ -4,7 +4,6 @@ from pathlib import Path
 import importlib.resources as resources
 from functools import lru_cache
 from typing import ClassVar
-from pykeedy.utils import load_encodings
 
 class NaibbeEncoding(BaseModel):
     name: str
@@ -210,3 +209,23 @@ def parse_encoding(encoding: NaibbeEncoding | str | None) -> NaibbeEncoding:
         elif encoding is None:
             encoding = get_default_encoding()
     return encoding
+
+@lru_cache(maxsize=1)
+def _load_encodings() -> dict[str, str]: # [enc_name: filename]
+    enc_dir = resources.files("pykeedy.data.encodings")
+    result = {}
+    for entry in enc_dir.iterdir():
+        if entry.is_file() and entry.name.endswith(".yaml"):
+            with entry.open("r", encoding="utf-8") as f:
+                data = yaml.safe_load(f)
+
+            try:
+                result[data["encoding"]["name"]] = entry.name
+            except KeyError:
+                print(f'Warning: Encoding file {entry.name} does not contain "encoding"->"name" key and cannot be parsed, skipping')
+    return result
+
+def load_encodings(force_update: bool = False) -> dict[str, str]:
+    if force_update:
+        _load_encodings.cache_clear()
+    return _load_encodings()

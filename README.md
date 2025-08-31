@@ -42,35 +42,55 @@
     - code: 3 character code consisting of 1-char 'locator' and 2-char 'locus type'
         - locator & locus type values defined in pdf page 21
 
+- Functions to easily calculate, at either letter or word level:
+    - n-gram frequency rank (most common letter, word, letter pair, word pair...)
+    - n-gram co-occurence (aka, pair attraction for n=2)
+    - position distribution in line, page, and manuscript
+    - entropy
+        - single (Shannon), pair, conditional
+    - Plus in-word position for letter, and word type + token length distributions
+- Batteries included, comes with:
+    - Easily-loadable VMS transliteration (basic Eva or Cuva)
+    - Filtering by every available property (Currier language, illustration type, locus type, etc)
+    - Handful of comparison manuscripts in European languages + easily load and chuck em all into the same analysis
+    - Naibbe encoder supporting arbitrary encoding tables + decoder implementing algorithm from paper
+    - Plotter functions for common data types (see examples)
+
 - Glyph
-    - [ ] Glyph frequency rank
-    - [ ] Glyph pair frequency rank
-    - [ ] Glyph pair attraction (matrix) + symmetry (scalar)
+    - [x] Glyph frequency rank
+    - [x] Glyph pair frequency rank
+    - [x] Glyph pair attraction (matrix)
     - [ ] Glyph position in vord
     - [ ] Glyph position in line (horiz)
     - [ ] Glyph position in paragraph (vert)
     - [ ] Glyph position in manuscript
 - Vord
-    - [ ] Vord token frequency rank
-    - [ ] Vord token pair frequency rank
-    - [ ] Vord token pair attraction (matrix) + symmetry (scalar)
+    - [x] Vord token frequency rank
+    - [x] Vord token pair frequency rank
+    - [x] Vord token pair attraction (matrix)
     - [ ] Vord token position in line (horiz)
     - [ ] Vord token position in paragraph (vert)
     - [ ] Vord token position in manuscript
     - [ ] Vord & vord token length distribution
 - Entropy
-    - [ ] Glyph entropy
-    - [ ] Glyph pair entropy
-    - [ ] Conditional entropy
-    - [ ] Vord entropy
-    - [ ] Vord pair entropy
-    - [ ] Conditional vord entropy (?)
+    - [x] Glyph entropy
+    - [x] Glyph pair entropy
+    - [x] Conditional entropy
+    - [x] Vord entropy
+    - [x] Vord pair entropy
+    - [x] Conditional vord entropy
 - [ ] Filters by every property available in the transliteration
 - [ ] Comparison plaintexts
     - Focus on European, especially Latin, Italian, German, but wide ranging
-- [ ] Naibbe encrypt & decrypt with arbitrary table (Gresko is default)
+- [x] Naibbe encrypt & decrypt with arbitrary table (Gresko is default)
 - Advanced
     - [ ] Automated topic analysis
     - [ ] Levenshtein & Hamming distance network generation
     - [ ] Measure of vord clustering
     - [ ] Self-citation algorithm
+
+- [ ] More options for dealing with spaces in entropy, freq, cooccurence analysis
+- [ ] Cuva alphabet support (conversion table: http://www.voynich.nu/software/bitrans/Eva-Cuva.bit)
+- [ ] STA alphabet support (later)
+- [ ] Glyph and vord pair attraction symmetry scalar
+- [ ] Support for recognizing single glyphs in non-basic EVA

@@ -1,6 +1,7 @@
 from pykeedy.naibbe import NaibbeEncoding, parse_encoding
 import numpy as np
 from pykeedy.utils import preprocess
+import re
 
 def encrypt(text: str, encoding: NaibbeEncoding | str | None = None, prngseed: int = 42) -> str:
     """
@@ -10,6 +11,12 @@ def encrypt(text: str, encoding: NaibbeEncoding | str | None = None, prngseed: i
     """
     encoding = parse_encoding(encoding)
     text = preprocess(text)
+
+    patt = f"[^{encoding.alphabet}]"
+    orig_len = len(text)
+    text = re.sub(patt, '', text)
+    if len(text) != orig_len:
+        print(f"Warning: {orig_len - len(text)}/{orig_len} characters were removed from input text because they are not in the encoding alphabet")
 
     rng = np.random.default_rng(seed=prngseed)
 
