@@ -6,15 +6,17 @@ from functools import lru_cache
 from typing import ClassVar
 
 class NaibbeEncoding(BaseModel):
-    name: str
+    name: str | None = None
     ngram_slot_tables: list[dict[str, list[str]]] # [unigram, bigram_prefix, bigram_suffix, ...] - order extremely important for lists!
     table_odds: list[float] | list[list[float]] # e.g. [5, 2, 2, 2, 1, 1] - order corresponding to lists in ngram_slot_tables
-    ngram_odds: list[float] # [1, 1] for equal odds unigram + bigram - order is ascending (first position is unigram, second bigram)
+    ngram_odds: list[float] | None = None # [1, 1] for equal odds unigram + bigram - order is ascending (first position is unigram, second bigram)
     
     VALID_TABLES: ClassVar[tuple] = ("unigram", "bigram_prefix", "bigram_suffix", "trigram_prefix", "trigram_core", "trigram_suffix")
 
     @model_validator(mode='after')
     def check_encoding(self) -> "NaibbeEncoding":
+        if self.ngram_odds is None:
+            self.ngram_odds = [1.0]
         num_ngrams = len(self.ngram_odds)
         num_tables = num_ngrams * (num_ngrams + 1) // 2
         # one slot per table
@@ -34,6 +36,8 @@ class NaibbeEncoding(BaseModel):
         for i, tab in enumerate(self.ngram_slot_tables):
             if i == 0:
                 alphabet = set(tab.keys())
+                if any(len(char) > 1 for char in alphabet):
+                    raise ValueError("ngram slot tables must have only single letters as keys")
             else:
                 if set(tab.keys()) != alphabet:
                     raise ValueError("All ngram_tables must use the same plaintext alphabet")
@@ -92,6 +96,8 @@ class NaibbeEncoding(BaseModel):
         return cls(**data)
     
     def to_file(self, filepath: Path) -> None:
+        if self.name is None:
+            raise ValueError("Encoding must have a name to be saved to file")
         data = {
             'name': self.name,
             'table_odds': self.table_odds,
@@ -105,7 +111,27 @@ class NaibbeEncoding(BaseModel):
         with open(filepath, 'w') as f:
             yaml.dump({'encoding': data}, f)
 
+    def print(self) -> None:
+        print("NaibbeEncoding(")
+        print("    ngram_slot_tables = [")
+        
+        for i, table in enumerate(self.ngram_slot_tables):
+            names = ("Unigram", "Bigram Prefix", "Bigram Suffix", "Trigram Prefix", "Trigram Core", "Trigram Suffix")
+
+            print(f"        # {names[i]} Table")
+            print("        {")
+            for key, value in table.items():
+                print(f'            "{key}": {value},')
+            print("        },")
+        
+        print("    ],")
+        print(f"    table_odds = {self.table_odds},")
+        print(f"    ngram_odds = {self.ngram_odds}")
+        print(")")
+
     def save(self) -> None:
+        if self.name is None:
+            raise ValueError("Encoding must have a name to be saved to file")
         self.to_file(Path(f"{self.name}.yaml"))
 
     @property

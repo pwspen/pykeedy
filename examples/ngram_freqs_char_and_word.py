@@ -10,4 +10,4 @@ for mode in ["char", "word"]:
         text = text.split(' ')
     for i in range(1, 4):
         # saves results in current folder as pngs
-        barplot(frequency_rank(text, n=i), fname=f"vms_{mode}_{i}gram_freq.png")
+        barplot(frequency_rank(text, n=i), fname=f"vms_{mode}_{i}-gram_freq.png")

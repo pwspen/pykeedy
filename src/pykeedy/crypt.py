@@ -3,7 +3,7 @@ import numpy as np
 from pykeedy.utils import preprocess
 import re
 
-def encrypt(text: str, encoding: NaibbeEncoding | str | None = None, prngseed: int = 42) -> str:
+def naibbe_encrypt(text: str, encoding: NaibbeEncoding | str | None = None, prngseed: int | None = 42) -> str:
     """
     Encrypt text using some Naibbe encoding.
     Note that this is a general implementation for encodings with any number of characters, ngram lengths, probabilities, etc.
@@ -11,13 +11,14 @@ def encrypt(text: str, encoding: NaibbeEncoding | str | None = None, prngseed: i
     """
     encoding = parse_encoding(encoding)
     text = preprocess(text)
-
-    patt = f"[^{encoding.alphabet}]"
+    alphabet_exclude = f"[^{encoding.alphabet}]"
     orig_len = len(text)
-    text = re.sub(patt, '', text)
+    text = re.sub(alphabet_exclude, '', text)
     if len(text) != orig_len:
         print(f"Warning: {orig_len - len(text)}/{orig_len} characters were removed from input text because they are not in the encoding alphabet")
 
+    if prngseed is None:
+        prngseed = np.random.randint(0, 2**32)
     rng = np.random.default_rng(seed=prngseed)
 
     def odds_to_thresholds(odds: list[float]) -> np.ndarray:
@@ -31,7 +32,7 @@ def encrypt(text: str, encoding: NaibbeEncoding | str | None = None, prngseed: i
         thresharr[0] = 0.0
         return thresharr
 
-    ngram_length_thresholds = odds_to_thresholds(encoding.ngram_odds)
+    ngram_length_thresholds = odds_to_thresholds(encoding.ngram_odds) # type: ignore - not None guaranteed during model validation
 
     table_thresholds_array = None
     # make and copy single thresholds table if each has the same odds, otherwise do for each
@@ -124,20 +125,26 @@ def greshko_decrypt(encoded: str, encoding: NaibbeEncoding | str | None = None) 
     def slot_hit(glyph: str, vord_remaining: str) -> bool:
         return common_prefix_length(glyph, vord_remaining) == len(glyph)
 
+    def get_longest_affix(vord: str, slots: list[list[str]]) -> int:
+        i = 0
+        for slot_options in slots:
+            best = 0
+            for glyph in slot_options:
+                if slot_hit(glyph, vord[i:]):
+                    best = len(glyph)
+            i += best
+        return i
+
     def parse_from_breakpoint(vord: str, pt: int) -> str:
         pre = vord[:pt]
         suf = vord[pt:]
         return slot_decrypt_tables[1][pre] + slot_decrypt_tables[2][suf]
 
-    vords = encoded.split(" ")
-    decoded = ""
-    for vord in vords:
-        # Step 1 (see above comment)
+    def step1(vord: str) -> str | None:
         if vord in slot_lists[0]:
-            decoded += slot_decrypt_tables[0][vord]
-            continue
+            return slot_decrypt_tables[0][vord]
 
-        # Step 2
+    def step2(vord: str) -> str | None:
         best = None
         for glyph in prefix_only_strs: # Get rightmost prefix glyph
             pos = vord.rfind(glyph)
@@ -154,35 +161,35 @@ def greshko_decrypt(encoded: str, encoding: NaibbeEncoding | str | None = None) 
                 # Sometimes the process is just wrong because type 1 affixes can be suffixes and vice versa, 
                 # so have to catch it and continue to step. words caught here tend to have no type 1 affix glyphs
                 # example: daleor, lsdaiin, oldal, alaiin, aleedal, qodain...
-                decoded += parse_from_breakpoint(vord, best)
-                continue
+                return parse_from_breakpoint(vord, best)
             except KeyError:
-                pass
+                return None
 
-        # Step 3
-        def get_longest_affix(vord: str, slots: list[list[str]]) -> int:
-            i = 0
-            for slot_options in slots:
-                best = 0
-                for glyph in slot_options:
-                    if slot_hit(glyph, vord[i:]):
-                        best = len(glyph)
-                i += best
-            return i
-        
+    def step3(vord: str) -> str | None:
         t1 = get_longest_affix(vord, t1_slots)
         t2 = get_longest_affix(vord, t2_slots)
         longest_idx = max(t1, t2)
-        # print(f"{t1=} {t2=}")
+
         try:
-            decoded += parse_from_breakpoint(vord, longest_idx)
+            return parse_from_breakpoint(vord, longest_idx)
         except:
-            # print(f"{vord}")
-            decoded += "?"
+            return None
+        
+    vords = encoded.split(" ")
+    decoded = "" # We add to this with each decode
+    for vord in vords: # Each word is entirely independent
+        for i, step in enumerate([step1, step2, step3]):
+            res = step(vord) # Result is either successfully decoded text or None
+            if res is not None:
+                decoded += res
+                break
+            if i == 2:
+                # We're after the last step (i==2) and found nothing
+                # (any success would've broken out of the lower loop)
+                decoded += "?"
 
         # Problem grams:
         # qol + o - grammar suggests qo + lo, lo is invalid (same for qolor)
         # o + ry / or + y - is also a valid t2 gram, so greedy parsing leaves no suffix
         # aiir + y - valid t2 gram
-
     return decoded

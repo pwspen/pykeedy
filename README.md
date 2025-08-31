@@ -56,6 +56,17 @@
     - Naibbe encoder supporting arbitrary encoding tables + decoder implementing algorithm from paper
     - Plotter functions for common data types (see examples)
 
+bits left:
+- [ ] filtering system
+- [ ] position functions
+    - absolute and fractional modes
+    - get_words, get_lines, get_pages funcs
+- [ ] couple more comparison manuscripts
+- [ ] cuva
+- [ ] word length token + type distribution
+- [ ] encoding scorer
+
+
 - Glyph
     - [x] Glyph frequency rank
     - [x] Glyph pair frequency rank
@@ -89,7 +100,7 @@
     - [ ] Measure of vord clustering
     - [ ] Self-citation algorithm
 
-- [ ] More options for dealing with spaces in entropy, freq, cooccurence analysis
+- [ ] More options for dealing with spaces and newlines in entropy, freq, cooccurence analysis
 - [ ] Cuva alphabet support (conversion table: http://www.voynich.nu/software/bitrans/Eva-Cuva.bit)
 - [ ] STA alphabet support (later)
 - [ ] Glyph and vord pair attraction symmetry scalar

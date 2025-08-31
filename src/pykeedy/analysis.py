@@ -1,4 +1,4 @@
-from pykeedy.crypt import greshko_decrypt, encrypt, preprocess
+from pykeedy.crypt import greshko_decrypt, naibbe_encrypt, preprocess
 from pykeedy.utils import load_corpus, shannon_entropy, conditional_entropy
 from pykeedy.vms import get_processed_vms
 import numpy as np
@@ -25,7 +25,7 @@ def test_reconstruction(text: str, n: int = 1000) -> float:
     avg = 0
     pre = preprocess(text)
     for i in range(n):
-        decoded = greshko_decrypt(encrypt(text, prngseed=np.random.randint(0, 2**32)))
+        decoded = greshko_decrypt(naibbe_encrypt(text, prngseed=np.random.randint(0, 2**32)))
         correct = len(pre) - levenshtein(decoded, pre)
         # print(decoded)
         # print(pre)
@@ -47,7 +47,7 @@ def test_entropy(encode_seeds: int = 1, mode: Literal["char", "word"] = "char") 
     for name, text in plain.items():
         all[name] = text
         for i in range(encode_seeds):
-            all[name + f"_enc{i}"] = encrypt(text, prngseed=i)
+            all[name + f"_enc{i}"] = naibbe_encrypt(text, prngseed=i)
     all["vms"] = get_processed_vms()
     if mode == "word":
         for name, text in all.items():

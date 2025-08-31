@@ -10,7 +10,7 @@ def preprocess(text: str) -> str:
     # \p{S} - Symbol characters (mathematical symbols, currency symbols, etc.)
     # \p{Z} - Separator characters including spaces, tabs, etc
     # regex is imported because standard re does not this type of syntax
-    remove = regex.compile(r'[\p{C}|\p{P}|\p{S}]+', regex.UNICODE)
+    remove = regex.compile(r'[\p{C}|\p{P}|\p{S} ]+', regex.UNICODE) # space at end of pattern is important!
     text = remove.sub('', text)
     text = text.lower()
     return text
