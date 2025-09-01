@@ -1,6 +1,6 @@
 from pykeedy.crypt import greshko_decrypt, naibbe_encrypt, preprocess
 from pykeedy.utils import load_corpus, shannon_entropy, conditional_entropy
-from pykeedy.vms import get_processed_vms
+from pykeedy import VMS
 import numpy as np
 import matplotlib.pyplot as plt
 from typing import Literal, Sequence
@@ -48,7 +48,7 @@ def test_entropy(encode_seeds: int = 1, mode: Literal["char", "word"] = "char") 
         all[name] = text
         for i in range(encode_seeds):
             all[name + f"_enc{i}"] = naibbe_encrypt(text, prngseed=i)
-    all["vms"] = get_processed_vms()
+    all["vms"] = VMS.to_text()
     if mode == "word":
         for name, text in all.items():
             all[name] = text.split(' ')
@@ -107,6 +107,7 @@ def heatmap(labels: list[str], matrix: list[list[int]], fname: str = "heatmap.pn
     ax.set_yticklabels(labels)
     
     ax.xaxis.tick_top()
+    plt.xticks(rotation=45, ha='left')
     ax.xaxis.set_label_position('top')
 
     # Add colorbar
@@ -120,6 +121,22 @@ def heatmap(labels: list[str], matrix: list[list[int]], fname: str = "heatmap.pn
     
     # Add axis labels if key is provided and add_axlabels function exists
     add_axlabels(["First element", "Second element"])
+    
+    plt.tight_layout()
+    plt.savefig(fname)
+    plt.close()
+
+def seriesplot(d: dict, key: Sequence[str] | None = None, fname: str = "seriesplot.png") -> None:
+    # Expect dict of {name: ((x1,y1), (x2,y2), ...)} pairs
+    # name: str, x & y: float
+    for i, (name, points) in enumerate(d.items()):
+        x_vals, y_vals = zip(*points)
+        plt.plot(x_vals, y_vals, label=name, c=f'C{i}', marker='o', linewidth=2, markersize=4)
+    
+    plt.legend()
+    
+    if key:
+        add_axlabels(key)
     
     plt.tight_layout()
     plt.savefig(fname)

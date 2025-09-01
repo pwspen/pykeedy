@@ -1,6 +1,7 @@
 from importlib import resources
 import regex
 import numpy as np
+from collections import Counter
 
 def preprocess(text: str) -> str:
     # preprocess text by deleting spaces and punctuation then lowercasing
@@ -112,6 +113,10 @@ def joint_entropy(text: str | list[str], n: int = 2) -> float:
 
 def conditional_entropy(text: str | list[str], n: int = 2) -> float:
     return joint_entropy(text, n) - shannon_entropy(text)
+
+def length_distribution(words: list[str]) -> tuple[tuple[int, int]]:
+    token_length_counts = Counter(len(word) for word in words)
+    return tuple(sorted(token_length_counts.items())) # type: ignore
 
 def load_corpus(names: str | list[str] | None = None, prep: bool = True) -> dict[str, str]:
     """

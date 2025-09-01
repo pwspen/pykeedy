@@ -2,8 +2,7 @@
 
 [Voynich Forum](https://www.voynich.ninja/)
 
-[Best all-around source of Voynich information](https://www.voynich.nu/) (by Rene Zandbergen)
-- All around great. However, it's somewhat of a spiderweb and has outdated information in parts, overwritten elsewhere. Software is also not user friendly.
+[Most complete source of Voynich information](https://www.voynich.nu/) (by Rene Zandbergen)
 - [Voynich transliteration](https://www.voynich.nu/transcr.html)
 - [Page by page overview](http://voynich.nu/q01/index.html)
 
@@ -14,26 +13,43 @@
 
 [IVTFF format explanation](https://www.voynich.nu/software/ivtt/IVTFF_format.pdf)
 - Page header (pg 20):
-    - Q: Quire number, 1->20 (A->T) excluding P/16 and R/18
-    - P: Page within quire, 1->24 (A->X)
-    - F: Folio within quire, a-f, u-z
-    - B: Bifolio within quire, 1-6
-    - I: Illustration type on page
-        - A: Astronomical
-        - B: Biological
-        - C: Cosmological
-        - H: Herbal
-        - P: Pharmaceutical
-        - S: Marginal stars only
-        - T: Text only
-        - Z: Zodiac
-    - L: Currier language (A, B)
-    - H: Fagin Davis scribe hand (1-5 + @)
-    - C: Currier scribe hand (1-5 + X + Z)
-    - X: Has extraneous writing
-        - C: Color annotation
-        - M: Month name
-        - S: Sequence of characters or numbers
+    - Numerical
+        - Q: Quire number, 1->20 (A->T) excluding P/16 and R/18
+        - P: Page within quire, 1->24 (A->X)
+        - F: Folio within quire, a-f, u-z
+        - B: Bifolio within quire, 1-6
+    - Categorical
+        - I: Illustration type on page
+            - A: Astronomical
+            - B: Biological
+            - C: Cosmological
+            - H: Herbal
+            - P: Pharmaceutical
+            - S: Marginal stars only
+            - T: Text only
+            - Z: Zodiac
+        - L: Currier language
+            - A
+            - B
+        - H: Fagin Davis scribe hand
+            - 1
+            - 2
+            - 3
+            - 4
+            - 5
+            - @
+        - C: Currier scribe hand 
+            - 1
+            - 2
+            - 3
+            - 4
+            - 5
+            - X
+            - Z
+        - X: Has extraneous writing
+            - C: Color annotation
+            - M: Month name
+            - S: Sequence of characters or numbers
 
 - Locus identifiers (start of each line)
     - < page . num , code >
@@ -49,22 +65,27 @@
     - entropy
         - single (Shannon), pair, conditional
     - Plus in-word position for letter, and word type + token length distributions
-- Batteries included, comes with:
+- Batteries included! comes with:
     - Easily-loadable VMS transliteration (basic Eva or Cuva)
-    - Filtering by every available property (Currier language, illustration type, locus type, etc)
+    - Filtering by every available property, at page and line levels (Currier language, illustration type, locus type, etc)
     - Handful of comparison manuscripts in European languages + easily load and chuck em all into the same analysis
     - Naibbe encoder supporting arbitrary encoding tables + decoder implementing algorithm from paper
-    - Plotter functions for common data types (see examples)
+    - Plotter functions for common data types / amalyses (see examples)
 
 bits left:
-- [ ] filtering system
+- [x] filtering system
+    - by page and line (different properties available)
 - [ ] position functions
+    - each unique gets a list that is filled with the position numbers, collapse to average for plot
     - absolute and fractional modes
     - get_words, get_lines, get_pages funcs
+    - function to identify rank distributions by concentration (for those with entries n > m)
 - [ ] couple more comparison manuscripts
 - [ ] cuva
-- [ ] word length token + type distribution
+- [x] word length token + type distribution
 - [ ] encoding scorer
+    - basic: ambiguity, reconstruction
+    - advanced: match to VMS properties, simplicity
 
 
 - Glyph
@@ -105,3 +126,8 @@ bits left:
 - [ ] STA alphabet support (later)
 - [ ] Glyph and vord pair attraction symmetry scalar
 - [ ] Support for recognizing single glyphs in non-basic EVA
+- [ ] Measure of encoding ambiguity - if you always pick the most likely option, how likely are you to be right?
+
+Transliteration issues:
+- Rosette page lacking folio number, inconsistent with other headers
+- IVTFF source says Currier hands contains X & Z but it actually contains X & Y

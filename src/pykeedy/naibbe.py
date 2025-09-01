@@ -116,9 +116,7 @@ class NaibbeEncoding(BaseModel):
         print("    ngram_slot_tables = [")
         
         for i, table in enumerate(self.ngram_slot_tables):
-            names = ("Unigram", "Bigram Prefix", "Bigram Suffix", "Trigram Prefix", "Trigram Core", "Trigram Suffix")
-
-            print(f"        # {names[i]} Table")
+            print(f"        # {self.tabname(i)} table")
             print("        {")
             for key, value in table.items():
                 print(f'            "{key}": {value},')
@@ -157,13 +155,10 @@ class NaibbeEncoding(BaseModel):
     
 
     def tabname(self, tab: int) -> str:
-        if tab == 0:
-            return "unigram"
-        elif tab in [1, 2]:
-            return f"bigram {'prefix' if tab == 1 else 'suffix'}"
-        elif tab in [3, 4, 5]:
-            return f"trigram {'prefix' if tab == 3 else 'middle' if tab == 4 else 'suffix'}"
-        else:
+        names = ("unigram", "bigram prefix", "bigram suffix", "trigram prefix", "trigram core", "trigram suffix")
+        try:
+            return names[tab]
+        except IndexError:
             raise ValueError("Only up to trigrams are supported")
 
     def ambiguousity(self):
@@ -172,6 +167,7 @@ class NaibbeEncoding(BaseModel):
         # An encoding is ambiguous if and only if:
         # -For any slot (unigram, bigram prefix, bigram suffix) there is a duplicate (among any character or table)
         # -An encoding from an earlier slot can be built from a combination of later ones
+        # -There is overlap in the valid ngrams for n>2
         
         def find_duplicates(lst):
             seen = set()
