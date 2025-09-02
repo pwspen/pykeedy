@@ -4,7 +4,7 @@ from pykeedy import run_full_analysis
 # run_full_analysis is an extremely powerful function that can run any combination of analyses on all of the available manuscripts
 # respective example files noted below
 run_full_analysis(
-    voynich=VMS.get(),
+    voynich=VMS.get(), # Any Manuscript object
     output_dir="../full_analysis",
     add_encrypted=True, # naibbe_entropy.py
     run_entropy=True, # entropy_comparison.py
