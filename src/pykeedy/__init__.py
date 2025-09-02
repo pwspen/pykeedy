@@ -1,1 +1,1 @@
-from pykeedy.datastructures import VMS, PageProp, LocusProp
+from pykeedy.datastructures import VMS, LocusProp

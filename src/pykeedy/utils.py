@@ -118,7 +118,7 @@ def length_distribution(words: list[str]) -> tuple[tuple[int, int]]:
     token_length_counts = Counter(len(word) for word in words)
     return tuple(sorted(token_length_counts.items())) # type: ignore
 
-def load_corpus(names: str | list[str] | None = None, prep: bool = True) -> dict[str, str]:
+def load_corpus(names: str | list[str] | None = None, prep: bool = True, limit_length: int | None = 250_000) -> dict[str, str]:
     """
     Load plaintext(s) and return dict[name: text]
     Accepts single name, list of names, or None for all available texts
@@ -139,5 +139,9 @@ def load_corpus(names: str | list[str] | None = None, prep: bool = True) -> dict
                 text = f.read()
             if prep:
                 text = preprocess(text)
+            if limit_length and len(text) > limit_length:
+                    orig_len = len(text)
+                    text = text[:limit_length]
+                    print(f"Warning: Truncated text '{name}' from {orig_len} to {limit_length} characters")
             result[name] = text
     return result

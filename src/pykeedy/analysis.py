@@ -75,6 +75,7 @@ def scatterplot(d: dict, key: Sequence[str] | None = None, fname: str = "scatter
         add_axlabels(key)
     plt.savefig(fname)
     plt.close()
+    print(f"Saved scatter plot to {fname}")
 
 def barplot(d: dict, fname: str = "barplot.png", n_max: int = 20) -> None:
     names, values = zip(*d.items())
@@ -87,6 +88,7 @@ def barplot(d: dict, fname: str = "barplot.png", n_max: int = 20) -> None:
     plt.tight_layout()
     plt.savefig(fname)
     plt.close()
+    print(f"Saved bar plot to {fname}")
     
 def heatmap(labels: list[str], matrix: list[list[int]], fname: str = "heatmap.png", n_max: int = 20) -> None:
     # Convert to numpy array for easier handling
@@ -125,6 +127,7 @@ def heatmap(labels: list[str], matrix: list[list[int]], fname: str = "heatmap.pn
     plt.tight_layout()
     plt.savefig(fname)
     plt.close()
+    print(f"Saved heatmap to {fname}")
 
 def seriesplot(d: dict, key: Sequence[str] | None = None, fname: str = "seriesplot.png") -> None:
     # Expect dict of {name: ((x1,y1), (x2,y2), ...)} pairs
@@ -141,3 +144,4 @@ def seriesplot(d: dict, key: Sequence[str] | None = None, fname: str = "seriespl
     plt.tight_layout()
     plt.savefig(fname)
     plt.close()
+    print(f"Saved series plot to {fname}")

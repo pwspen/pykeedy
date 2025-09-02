@@ -3,6 +3,8 @@ from pykeedy.analysis import seriesplot
 from pykeedy.utils import length_distribution
 from collections import Counter
 
+# Plot the distribution of word lengths in the VMS
+
 words = VMS.to_words()
 
 results = {
