@@ -1,0 +1,38 @@
+{
+    "analysis": {
+        "generated_at": "2025-09-02T17:09:07.009943",
+        "manuscripts": [
+            "inferno",
+            "meidekranz",
+            "naturalis",
+            "VMS"
+        ],
+        "cross_manuscript": [
+            "entropy_comparison.png"
+        ],
+        "per_manuscript": {
+            "char_ngram_freq": [
+                "<name>_char_1-gram_freq.png",
+                "<name>_char_2-gram_freq.png",
+                "<name>_char_3-gram_freq.png"
+            ],
+            "word_ngram_freq": [
+                "<name>_word_1-gram_freq.png",
+                "<name>_word_2-gram_freq.png",
+                "<name>_word_3-gram_freq.png"
+            ],
+            "cooccurence_heatmaps": [
+                "<name>_char_cooccurence_heatmap.png",
+                "<name>_word_cooccurence_heatmap.png"
+            ],
+            "word_lengths": [
+                "<name>_word_lengths.png"
+            ],
+            "positions": [
+                "<name>_letters_pos_in_words.png",
+                "<name>_words_pos_in_lines.png",
+                "<name>_words_pos_in_manuscript.png"
+            ]
+        }
+    }
+}

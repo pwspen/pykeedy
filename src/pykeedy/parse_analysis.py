@@ -47,6 +47,8 @@ def analysis_to_md(
     for analysis_type, pattern_list in per_manuscript.items():
         for pattern in pattern_list:
             for manuscript in manuscripts:
+                print(manuscript)
+                print(manuscripts)
                 filename = pattern.replace("<name>", manuscript)
                 expected_files.append(filename)
     

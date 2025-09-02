@@ -80,7 +80,8 @@ def per_manuscript(
         seriesplot(results, key=(f"Word length", "Count"), fname=f"{output_dir}/{name}_word_lengths.png", title=f"{name} word length")
 
     if run_positions:
-        letters = set(ms.to_text())
+        text = ms.to_text()
+        letters = set(text)
         word_tokens = ms.to_words()
         lines = ms.to_lines()
 
@@ -138,7 +139,7 @@ def run_full_analysis(
 
     analysis_manifest = {
         "analysis": {
-            "generated_at": datetime.now().isoformat()
+            "generated_at": datetime.now().isoformat(),
             "manuscripts": [list(texts.keys())],
             "cross_manuscript": ["entropy_comparison.png"],
             "per_manuscript": {

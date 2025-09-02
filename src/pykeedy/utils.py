@@ -62,7 +62,7 @@ def load_corpus(names: str | list[str] | None = None, prep: bool = True, limit_l
     if give_objects:
         result = {name: PlainManuscript(text) for name, text in result.items()}
 
-    return result
+    return result # type: ignore
 
 def add_axlabels(key: Sequence[str]) -> None:
     if not all(isinstance(x, str) for x in key) or len(key) != 2:
