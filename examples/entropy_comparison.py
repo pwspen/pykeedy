@@ -1,6 +1,7 @@
 from pykeedy import VMS
-from pykeedy.analysis import scatterplot, load_corpus
-from pykeedy.utils import shannon_entropy, conditional_entropy
+from pykeedy.utils import scatterplot
+from pykeedy.analysis import shannon_entropy, conditional_entropy
+from pykeedy.utils import load_corpus
 
 # Compute and save plots of character and conditional entropy of the VMS vs comparison plaintexts
 

@@ -1,6 +1,6 @@
 from pykeedy import VMS
-from pykeedy.analysis import heatmap
-from pykeedy.utils import cooccurence_matrix
+from pykeedy.utils import heatmap
+from pykeedy.analysis import cooccurence_matrix
 
 # Compute and save heatmap plots of co-occurence / pair-attraction at character and word level in VMS
 

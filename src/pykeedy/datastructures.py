@@ -106,12 +106,16 @@ class VMSDataclass:
         for field in fields(cls): # type: ignore
             print(f"Name: {field.name}")
 
+# Transliteration issues:
+#   - Rosette page lacking folio number, inconsistent with other headers (this is the only reason folios_in_quire can be None)
+#   - IVTFF source says Currier hands contains X & Z but it actually contains X & Y
+
 @dataclass
 class Locus(VMSDataclass):
     # Page properties
     quire_num: int
     page_in_quire_num: int
-    folio_in_quire_num: int | None
+    folio_in_quire_num: int | None 
     bifolio_in_quire_num: int
     illustration: LocusProp.IllustrationType
     currier_language: LocusProp.CurrierLanguage | None
@@ -213,7 +217,7 @@ def loci_list_from_lines(lines: list[str], header: str) -> list[Locus]:
     # This function is sensitive to the order of the above dict matching the order of constructor parameters. Maybe use type introspection?
     return [Locus.from_line(page_props=props, line=line) for line in lines]
     
-def eva_to_cuva(text: str) -> str:
+def to_alphabet(text: str, alphabet: Literal["eva", "cuva"]) -> str:
     subs = [
         (r'a', 'A'),
         (r'b', 'B'),
@@ -253,8 +257,50 @@ def eva_to_cuva(text: str) -> str:
         (r'y', 'Y'),
         (r'z', 'J')
     ]
-    for string, sub in subs:
-        text = re.sub(string, sub, text)
+    if alphabet.lower() not in ("eva", "cuva"):
+        raise ValueError("alphabet must be 'eva' or 'cuva'")
+    match alphabet:
+        case "eva":
+            return text
+        case "cuva":
+            for string, sub in subs:
+                text = re.sub(string, sub, text)
+            return text
+        
+def strip_inline_metadata(text: str, normalize_gaps: bool, delete_comments: bool) -> str:
+    if delete_comments:
+        # There are only like 3 of these in the text
+        text = re.sub(r'<[!@%$].*?>', '', text)
+    if normalize_gaps:
+        # Convert all <-> <~> , to .
+        text = re.sub(r'<[-~]>|,', '.', text)
+    return text
+
+@dataclass
+class TextProcessingOptions:
+    alphabet: Literal["eva", "cuva"] = "eva"
+    normalize_gaps: bool = True
+    delete_comments: bool = True
+
+    # The point of this is to funnel all the to_text, to_lines, to_words signatures to a single place,
+    # by having them just pass kwargs to here
+    # I really don't like that kwargs mostly destroys type checking and figuring out the signature
+    # Considered decorator but it seems pretty much equivalent in effects but more complicated
+    # I think this slightly edges out previous setup of having a million duplicated call signatures
+    @classmethod
+    def from_kwargs(cls, **kwargs):
+        try:
+            return cls(**kwargs)
+        except TypeError as e:
+            if "unexpected keyword argument" in str(e):
+                param_name = str(e).split("'")[-2]
+                raise ValueError(f"'{param_name}' is not a valid text processing option")
+            else:
+                raise ValueError(f"Invalid text processing options: {str(e)}")
+
+def to_final_text(text: str, opts: TextProcessingOptions) -> str:
+    text = strip_inline_metadata(text, normalize_gaps=opts.normalize_gaps, delete_comments=opts.delete_comments)
+    text = to_alphabet(text, opts.alphabet)
     return text
 
 @dataclass
@@ -299,40 +345,41 @@ class Manuscript(VMSDataclass):
         return cls(loci=loci[::-1], source_filename=fname) # Put loci back in normal order
     
     # to_lines, to_words, and the same names in VMS class are basically just wrappers for this function
-    # I'm not super happy with the duplication in all of their argument lists.
-    # I considered an Options class common to all of them but that's annoying for the user to figure out
-    # And I don't like kwargs because it destroys type checking
-    # If more parameters are added, make sure to update the other signatures and pass them through
-    # If many more parameters are added, should probably move to Options class
-    def to_text(self, alphabet: Literal["eva", "cuva"] = "eva", normalize_spaces: bool = True) -> str:
-        text = decompose(self)
-        
-        inline_comments, gaps = (r'(<[!@%$].*?>)', ''), (r'(<[-~]>)', '.')
-        # Always delete any inline comments, there are only like 3 of them in the text so its not worth supporting
-        text = re.sub(*inline_comments, text)
-
-        if normalize_spaces:
-            text = re.sub(*gaps, text)
-
-        if alphabet.lower() not in ("eva", "cuva"):
-            raise ValueError("alphabet must be 'eva' or 'cuva'")
-        match alphabet:
-            case "eva":
-                pass # already in eva
-            case "cuva":
-                text = eva_to_cuva(text)
-
+    # See note in TextProcessingOptions - not super happy with kwargs
+    # The below two methods should be the only methods that create TextProcessingOptions objects!
+    # because they are the only ones that have to build up text in different ways by calling to_final_text
+    # (it could be reduced to just to_text if Locus had some prop like last_in_page)
+    def to_text(self, **kwargs) -> str:
+        opts = TextProcessingOptions.from_kwargs(**kwargs)
+        text = decompose(self) # gives us a str
+        text = to_final_text(text, opts)
         return text
     
-    def to_lines(self, alphabet: Literal["eva", "cuva"] = "eva", normalize_spaces: bool = True) -> list[str]:
-        return self.to_text(alphabet=alphabet, normalize_spaces=normalize_spaces).splitlines()
+    def to_pages(self, **kwargs) -> list[str]:
+        opts = TextProcessingOptions.from_kwargs(**kwargs)
+        # because of fRos, page names can't be sorted alphabetically
+        pages: list[list[Locus]] = []
+        curr_pagename = ""
+        for locus in self.loci:
+            if locus.page_name != curr_pagename:
+                curr_pagename = locus.page_name
+                pages.append([])
+            pages[-1].append(locus)
+        pagetext: list[str] = [decompose(page) for page in pages] # type: ignore
+        for i, ptext in enumerate(pagetext):
+            ptext = to_final_text(ptext, opts)
+            pagetext[i] = ptext
+        return pagetext
+
+    def to_lines(self, **kwargs) -> list[str]:
+        return self.to_text(**kwargs).splitlines()
     
-    def to_words(self, alphabet: Literal["eva", "cuva"] = "eva", normalize_spaces: bool = True) -> list[str]:
+    def to_words(self, **kwargs) -> list[str]:
         words = []
-        for line in self.to_lines(alphabet=alphabet, normalize_spaces=normalize_spaces):
+        for line in self.to_lines(**kwargs):
             words.extend(line.split('.'))
         return words
-
+    
 VMSObject = Manuscript | Locus
 # We want to be able to easily take any combination and turn it all into text.
 def decompose(source: VMSObject | list[VMSObject]) -> str:
@@ -349,11 +396,13 @@ def decompose(source: VMSObject | list[VMSObject]) -> str:
         else:
             raise TypeError("source must be Manuscript, Page, or Locus")
     return text
-    
+
 # Helper class to load from transliteration file and create Manuscript objects, returning it or its text/lines/words/filtered etc.
 class VMS:
     @classmethod
-    def filter(cls, props: Sequence[LocusPropType]) -> Manuscript:
+    def filter(cls, props: Sequence[LocusPropType] | LocusPropType) -> Manuscript:
+        if isinstance(props, LocusPropType):
+            props = [props]
         filt_props = [prop for prop in props if issubclass(prop.__class__, LocusPropType)]
 
         vms = cls.get()
@@ -370,19 +419,25 @@ class VMS:
         return Manuscript(loci=loci, source_filename=vms.source_filename)
     
     @classmethod
-    def to_words(cls, alphabet: Literal["eva", "cuva"] = "eva", normalize_spaces: bool = True) -> list[str]:
-        return cls.get().to_words(alphabet=alphabet, normalize_spaces=normalize_spaces)
+    def to_words(cls, **kwargs) -> list[str]:
+        return cls.get().to_words(**kwargs)
 
     @classmethod
-    def to_lines(cls, alphabet: Literal["eva", "cuva"] = "eva", normalize_spaces: bool = True) -> list[str]:
-        return cls.get().to_lines(alphabet=alphabet, normalize_spaces=normalize_spaces)
+    def to_lines(cls, **kwargs) -> list[str]:
+        return cls.get().to_lines(**kwargs)
 
     @classmethod
-    def to_text(cls, alphabet: Literal["eva", "cuva"] = "eva", normalize_spaces: bool = True) -> str:
-        return cls.get().to_text(alphabet=alphabet, normalize_spaces=normalize_spaces)
+    def to_pages(cls, **kwargs) -> list[str]:
+        return cls.get().to_pages(**kwargs)
+        
+    @classmethod
+    def to_text(cls, **kwargs) -> str:
+        return cls.get().to_text(**kwargs)
 
     @classmethod
     def get(cls, basic_ver: bool = True) -> Manuscript:
+        if not basic_ver:
+            print("Warning: Support for extended EVA very untested, please report any issues")
         translit_dir = resources.files("pykeedy.data.transliterations")
 
         basic = translit_dir / "RF1b-er.txt"

@@ -1,6 +1,6 @@
 from pykeedy import VMS
-from pykeedy.analysis import seriesplot
-from pykeedy.utils import length_distribution
+from pykeedy.utils import seriesplot
+from pykeedy.analysis import length_distribution
 from collections import Counter
 
 # Plot the distribution of word lengths in the VMS
@@ -12,7 +12,7 @@ results = {
     "type": length_distribution(list(set(words))) # only the unique words
 }
 
-seriesplot(results, key=("Word length", "Count")) # saves "seriesplot.png" in current folder
+seriesplot(results, key=("Word length", "Count"), fname="word_lengths.png") # saves "seriesplot.png" in current folder
 
 # You can also do this quite easily without the library, and the library
 # uses this exact same code internally:

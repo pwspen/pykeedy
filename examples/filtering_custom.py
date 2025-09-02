@@ -5,7 +5,7 @@ from pykeedy.datastructures import Manuscript, Locus, decompose
 vms = VMS.get()
 
 # 'VMS' is mostly just a wrapper for a Manuscript object, so you can do all the same stuff
-vms.to_lines(normalize_spaces=False)
+vms.to_lines(normalize_gaps=False)
 vms.to_words(alphabet="cuva")
 
 # The main data-storing class this library uses is Locus
@@ -26,21 +26,26 @@ b_or_herbal = [locus for locus in vms.loci if locus.currier_language == Prop.Cur
 print(f'B and Herbal: {len(b_and_herbal)}, B or Herbal: {len(b_or_herbal)}') # B and Herbal: 2809, B or Herbal: 4071
 print(f'Names of all b+herbal pages: {set([loc.page_name for loc in b_and_herbal])}') # Get unique page names
 
+
 # Create new Manuscript objects with list of Locus
 voynich_b = Manuscript(loci=[loc for loc in vms.loci if loc.currier_language == Prop.CurrierLanguage.B])
 
 # All of these methods are available for any Manuscript object
 text, lines, words = voynich_b.to_text(), voynich_b.to_lines(), voynich_b.to_words()
 
+
 # Locus has methods .is_label(), .is_paragraph(), and .is_below_prev() (all returning booleans)
 # to easily filter by commonly grouped categories
 labels = [loc for loc in vms.loci if loc.is_label()] # Labels only
 
+
 # Complex filtering operation:
 # Get all loci that are Currier Lang A and on pages with Herbal illustrations,
-# but exclude any of them in Davis hands H2 or H3
+# but exclude any of them in Davis hands H2 or H3,
+# and exclude any below a certain line length in characters
 include = [Prop.CurrierLanguage.A, Prop.IllustrationType.Herbal]
 exclude = [Prop.DavisHand.H2, Prop.DavisHand.H3]
+min_length = 20
 
 # Calling VMS.get() ensures you always get the full unmodified list of loci
 # Locus objects have .props() that returns a list of all their LocusProps
@@ -50,10 +55,12 @@ for locus in VMS.get().loci:
     has_all_include = all(inc_prop in locus.props() for inc_prop in include)
     # Or any of the ones we want to exclude
     has_any_exclude = any(ex_prop in locus.props() for ex_prop in exclude)
-    if has_all_include and not has_any_exclude:
+    long_enough = len(locus.text) >= min_length
+    if has_all_include and not has_any_exclude and long_enough:
         match_loci.append(locus)
 
 text = Manuscript(loci=match_loci).to_text()
+
 
 # The IVTFF string code for a given property can be turned into the property itself:
 prop = Prop.CurrierLanguage('B')

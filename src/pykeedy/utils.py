@@ -1,7 +1,10 @@
 from importlib import resources
-import regex
 import numpy as np
-from collections import Counter
+import matplotlib.pyplot as plt
+from typing import Sequence
+import regex
+import re
+from dataclasses import dataclass
 
 def preprocess(text: str) -> str:
     # preprocess text by deleting spaces and punctuation then lowercasing
@@ -11,114 +14,26 @@ def preprocess(text: str) -> str:
     # \p{S} - Symbol characters (mathematical symbols, currency symbols, etc.)
     # \p{Z} - Separator characters including spaces, tabs, etc
     # regex is imported because standard re does not this type of syntax
-    remove = regex.compile(r'[\p{C}|\p{P}|\p{S} ]+', regex.UNICODE) # space at end of pattern is important!
+    remove = regex.compile(r'[\p{P}|\p{S}]+', regex.UNICODE) # space at end of pattern is important!
     text = remove.sub('', text)
+    text = re.sub(r'(?:\r?\n){2,}', '\n', text)
     text = text.lower()
     return text
 
-def frequency_rank(text: str | list[str], n: int = 1) -> dict[str, int]:
-    # Accept either a string and return character frequency rank,
-    # Or a list of words and return word frequency rank.
-    # Return sorted descending
-    char_level = isinstance(text, str)
-    
-    seq = np.array(list(text)) if char_level else np.array(text)
+@dataclass
+class PlainManuscript:
+    text: str
 
-    if len(seq) < n:
-        return {}
+    def to_text(self) -> str:
+        return self.text
 
-    # could be optimized but whatever
-    ngrams = [seq[i:i+n] for i in range(len(seq)-n+1)]
-    unique, counts = np.unique(ngrams, axis=0, return_counts=True)
+    def to_words(self) -> list[str]:
+        return self.text.split()
     
-    sorted_indices = np.argsort(counts)[::-1]
-    joiner = '' if char_level else ' '
+    def to_lines(self) -> list[str]:
+        return self.text.splitlines()
 
-    result: dict[str, int] = {}
-    for idx in sorted_indices:
-        key = joiner.join(unique[idx])  # works for all n, including n==1
-        if ' ' in key:
-            key = f"'{key}'"
-        result[key] = int(counts[idx])
-    
-    return result
-
-def cooccurence_matrix(text: str | list[str], n: int = 2) -> tuple[list[str], list[list[int]]]:
-    char_level = isinstance(text, str)
-    seq = np.array(list(text)) if char_level else np.array(text)
-    
-    if len(seq) < n:
-        return [], []
-    
-    # Generate n-grams, excluding any containing spaces
-    # TODO add option that includes spaces to calculate most common first and last letters
-    ngrams = []
-    exclude = [' ', '\n']
-    for i in range(len(seq)-n+1):
-        ngram = tuple(seq[i:i+n])
-        if any(elem in exclude for elem in ngram):
-            continue
-        ngrams.append(ngram)
-    
-    # Get unique n-grams and their counts
-    unique_ngrams, counts = np.unique(ngrams, axis=0, return_counts=True)
-    
-    # Counting the gram occurences in all ngram occurences
-    # Note this duplicates anything not at the start or end of a sequence
-    # We want that in this case
-    element_counts = {}
-    for ngram_array, count in zip(unique_ngrams, counts):
-        for element in ngram_array:
-            element_counts[element] = element_counts.get(element, 0) + count
-
-    # Generate sorted-descending list of elements by their counts
-    sorted_elements = sorted(element_counts.keys(), key=lambda x: element_counts[x], reverse=True)
-    
-    # Create element to index mapping
-    element_to_idx = {elem: i for i, elem in enumerate(sorted_elements)}
-    
-    # Initialize matrix
-    matrix = np.zeros(tuple(len(sorted_elements) for _ in range(n)), dtype=int)
-    
-    # Fill matrix using unique n-grams and their counts
-    # This works for any n
-    for i, ngram_array in enumerate(unique_ngrams):
-        ngram_count = counts[i]
-        # Reverseing elements to make columns first element and rows second
-        idx = tuple(element_to_idx[elem] for elem in ngram_array)[::-1]
-        matrix[idx] += ngram_count
-    return sorted_elements, matrix.tolist()
-
-def shannon_entropy(text: str | list[str]) -> float:
-    # Accept either a string and return character entropy,
-    # Or a list of words and return word entropy.
-    seq = np.array(list(text)) if isinstance(text, str) else np.array(text)
-    unique_chars, counts = np.unique(seq, return_counts=True)
-    probabilities = counts / len(text)
-    entropy = -np.sum(probabilities * np.log2(probabilities + 1e-10))
-    return float(entropy)
-
-def joint_entropy(text: str | list[str], n: int = 2) -> float:
-    seq = np.array(list(text)) if isinstance(text, str) else np.array(text)
-    
-    if len(seq) < n:
-        return 0.0
-    
-    # Get each ngram from sequence
-    ngrams = [tuple(seq[i:i+n]) for i in range(len(seq)-n+1)]
-    unique_ngrams, counts = np.unique(ngrams, axis=0, return_counts=True)
-    probabilities = counts / len(ngrams)
-    entropy = -np.sum(probabilities * np.log2(probabilities + 1e-10))
-    return float(entropy)
-
-def conditional_entropy(text: str | list[str], n: int = 2) -> float:
-    return joint_entropy(text, n) - shannon_entropy(text)
-
-def length_distribution(words: list[str]) -> tuple[tuple[int, int]]:
-    token_length_counts = Counter(len(word) for word in words)
-    return tuple(sorted(token_length_counts.items())) # type: ignore
-
-def load_corpus(names: str | list[str] | None = None, prep: bool = True, limit_length: int | None = 250_000) -> dict[str, str]:
+def load_corpus(names: str | list[str] | None = None, prep: bool = True, limit_length: int | None = 250_000, give_objects: bool = False) -> dict[str, str | PlainManuscript]:
     """
     Load plaintext(s) and return dict[name: text]
     Accepts single name, list of names, or None for all available texts
@@ -144,4 +59,102 @@ def load_corpus(names: str | list[str] | None = None, prep: bool = True, limit_l
                     text = text[:limit_length]
                     print(f"Warning: Truncated text '{name}' from {orig_len} to {limit_length} characters")
             result[name] = text
+    if give_objects:
+        result = {name: PlainManuscript(text) for name, text in result.items()}
+
     return result
+
+def add_axlabels(key: Sequence[str]) -> None:
+    if not all(isinstance(x, str) for x in key) or len(key) != 2:
+        raise ValueError("key must contain only 2 strings representing labels")
+    
+    plt.xlabel(key[0])
+    plt.ylabel(key[1])
+
+def scatterplot(d: dict, key: Sequence[str] = ("X", "Y"), fname: str = "scatterplot.png") -> None:
+    # Expect dict of {name: (x, y)} pairs
+    # name: str, x & y: float
+    for i, (name, (x, y)) in enumerate(d.items()):
+        plt.scatter(x, y, label=name, c=f'C{i}')
+        plt.annotate(name, (x, y), xytext=(5, 5), textcoords='offset points')
+    add_axlabels(key)
+    plt.savefig(fname)
+    plt.close()
+    print(f"Saved scatter plot to {fname}")
+
+def barplot(d: dict, key: Sequence[str] = ("Item", "Number"), fname: str = "barplot.png", n_max: int = 20, color: str | None = None, title: str | None = None) -> None:
+    names, values = zip(*d.items())
+    names, values = list(names), list(values)
+    if len(names) > n_max:
+        print(f"Warning: More than {n_max=} items passed to barplot, truncating") 
+        names, values = names[:n_max], values[:n_max]
+    plt.bar(names, values, color=color)
+    add_axlabels(key)
+    if title:
+        plt.title(title)
+    plt.xticks(rotation=45, ha='right')
+    plt.tight_layout()
+    plt.savefig(fname)
+    plt.close()
+    print(f"Saved bar plot to {fname}")
+    
+def heatmap(labels: list[str], matrix: list[list[float]], key: Sequence[str] = ("First element", "Second element"), fname: str = "heatmap.png", n_max: int = 20, title: str | None = None) -> None:
+    # Convert to numpy array for easier handling
+    matrix_array = np.array(matrix)
+    
+    if len(labels) > n_max:
+        print(f"Warning: More than {n_max=} items passed to heatmap, truncating labels and matrix") 
+        labels = labels[:n_max]
+        matrix_array = matrix_array[:n_max, :n_max]
+
+    if title:
+        plt.title(title)
+
+    # Create the heatmap
+    fig, ax = plt.subplots(figsize=(8, 6))
+    im = ax.imshow(matrix_array, cmap='plasma', aspect='auto')
+    
+    # Set the ticks and labels
+    ax.set_xticks(range(len(labels)))
+    ax.set_yticks(range(len(labels)))
+    ax.set_xticklabels(labels)
+    ax.set_yticklabels(labels)
+    
+    ax.xaxis.tick_top()
+    plt.xticks(rotation=45, ha='left')
+    ax.xaxis.set_label_position('top')
+
+    # Add colorbar
+    plt.colorbar(im)
+    
+    # Add text annotations showing the values
+    if len(labels) < 10:
+        for i in range(len(labels)):
+            for j in range(len(labels)):
+                text = ax.text(j, i, matrix_array[i, j], ha="center", va="center", color="black")
+    
+    add_axlabels(key)
+    
+    plt.tight_layout()
+    plt.savefig(fname)
+    plt.close()
+    print(f"Saved heatmap to {fname}")
+
+def seriesplot(d: dict, key: Sequence[str] = ("X", "Y"), fname: str = "seriesplot.png", title: str | None = None) -> None:
+    # Expect dict of {name: ((x1,y1), (x2,y2), ...)} pairs
+    # name: str, x & y: float
+    for i, (name, points) in enumerate(d.items()):
+        x_vals, y_vals = zip(*points)
+        plt.plot(x_vals, y_vals, label=name, c=f'C{i}', marker='o', linewidth=2, markersize=4)
+    
+    if title:
+        plt.title(title)
+
+    plt.legend()
+    
+    add_axlabels(key)
+    
+    plt.tight_layout()
+    plt.savefig(fname)
+    plt.close()
+    print(f"Saved series plot to {fname}")
