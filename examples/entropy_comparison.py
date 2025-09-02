@@ -15,4 +15,8 @@ for name, text in plain.items():
     # Pair entropy also available
     results[name] = (shannon_entropy(text), conditional_entropy(text))
 # saves in current folder
-scatterplot(results, key=(f"character entropy (bits)", "conditional entropy (bits)"), fname="entropy_comparison.png")
+scatterplot(
+    results,
+    key=("character entropy (bits)", "conditional entropy (bits)"),
+    fname="entropy_comparison.png",
+)

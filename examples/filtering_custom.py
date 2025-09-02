@@ -1,5 +1,5 @@
 from pykeedy import VMS, LocusProp as Prop
-from pykeedy.datastructures import Manuscript, Locus, decompose
+from pykeedy.datastructures import Manuscript
 
 # If you want to do more complex filtering / analysis, you can get the full Manuscript object
 vms = VMS.get()
@@ -12,23 +12,35 @@ vms.to_words(alphabet="cuva")
 # Each one is one line from the IVTFF file
 # Manuscript is mostly just a list of locuses / loci
 
-vms.print_fields() # Only source_filename and loci
-print('-----')
-vms.loci[0].print_fields() # All locus level properties
-print('-----')
+vms.print_fields()  # Only source_filename and loci
+print("-----")
+vms.loci[0].print_fields()  # All locus level properties
+print("-----")
 
 # Directly accessing the properties lets you do whatever filtering / analysis operations you can think of
-b_and_herbal = [locus for locus in vms.loci if locus.currier_language == Prop.CurrierLanguage.B]
+b_and_herbal = [
+    locus for locus in vms.loci if locus.currier_language == Prop.CurrierLanguage.B
+]
 
-b_or_herbal = [locus for locus in vms.loci if locus.currier_language == Prop.CurrierLanguage.B
-                                            or locus.illustration == Prop.IllustrationType.Herbal]
+b_or_herbal = [
+    locus
+    for locus in vms.loci
+    if locus.currier_language == Prop.CurrierLanguage.B
+    or locus.illustration == Prop.IllustrationType.Herbal
+]
 
-print(f'B and Herbal: {len(b_and_herbal)}, B or Herbal: {len(b_or_herbal)}') # B and Herbal: 2809, B or Herbal: 4071
-print(f'Names of all b+herbal pages: {set([loc.page_name for loc in b_and_herbal])}') # Get unique page names
+print(
+    f"B and Herbal: {len(b_and_herbal)}, B or Herbal: {len(b_or_herbal)}"
+)  # B and Herbal: 2809, B or Herbal: 4071
+print(
+    f"Names of all b+herbal pages: {set([loc.page_name for loc in b_and_herbal])}"
+)  # Get unique page names
 
 
 # Create new Manuscript objects with list of Locus
-voynich_b = Manuscript(loci=[loc for loc in vms.loci if loc.currier_language == Prop.CurrierLanguage.B])
+voynich_b = Manuscript(
+    loci=[loc for loc in vms.loci if loc.currier_language == Prop.CurrierLanguage.B]
+)
 
 # All of these methods are available for any Manuscript object
 text, lines, words = voynich_b.to_text(), voynich_b.to_lines(), voynich_b.to_words()
@@ -36,7 +48,7 @@ text, lines, words = voynich_b.to_text(), voynich_b.to_lines(), voynich_b.to_wor
 
 # Locus has methods .is_label(), .is_paragraph(), and .is_below_prev() (all returning booleans)
 # to easily filter by commonly grouped categories
-labels = [loc for loc in vms.loci if loc.is_label()] # Labels only
+labels = [loc for loc in vms.loci if loc.is_label()]  # Labels only
 
 
 # Complex filtering operation:
@@ -63,39 +75,39 @@ text = Manuscript(loci=match_loci).to_text()
 
 
 # The IVTFF string code for a given property can be turned into the property itself:
-prop = Prop.CurrierLanguage('B')
-print(prop == Prop.CurrierLanguage.B) # True
+prop = Prop.CurrierLanguage("B")
+print(prop == Prop.CurrierLanguage.B)  # True
 
 # However, note that for convenience, for many properties the codes are not the same as the property name
-prop2 = Prop.Type('L0')
-print(prop2 == Prop.Type.NotDrawingAssociated) # True
+prop2 = Prop.Type("L0")
+print(prop2 == Prop.Type.NotDrawingAssociated)  # True
 
 # Note also that Locus objects have other information that isn't part of the special property system:
 loc = vms.loci[0]
-print(loc.page_name) # f1r
-print(loc.locus_in_page_num) # 1
-print(loc.id_str) # f1r.1
-print(loc.text) # fachys.ykal.ar ...
+print(loc.page_name)  # f1r
+print(loc.locus_in_page_num)  # 1
+print(loc.id_str)  # f1r.1
+print(loc.text)  # fachys.ykal.ar ...
 
 # Complete list of Locus properties:
 
-    # At page level:
+# At page level:
 
-    # quire_num: int
-    # page_in_quire_num: int
-    # folio_in_quire_num: int | None
-    # bifolio_in_quire_num: int
-    # illustration: LocusProp.IllustrationType
-    # currier_language: LocusProp.CurrierLanguage | None
-    # davis_hand: LocusProp.DavisHand
-    # currier_hand: LocusProp.CurrierHand | None
-    # extraneous_writing: LocusProp.ExtraneousWriting | None
-    # page_name: str
+# quire_num: int
+# page_in_quire_num: int
+# folio_in_quire_num: int | None
+# bifolio_in_quire_num: int
+# illustration: LocusProp.IllustrationType
+# currier_language: LocusProp.CurrierLanguage | None
+# davis_hand: LocusProp.DavisHand
+# currier_hand: LocusProp.CurrierHand | None
+# extraneous_writing: LocusProp.ExtraneousWriting | None
+# page_name: str
 
-    # At locus level:
+# At locus level:
 
-    # id_str: str
-    # locus_in_page_num: int
-    # location: LocusProp.Location
-    # type: LocusProp.Type
-    # text: str
+# id_str: str
+# locus_in_page_num: int
+# location: LocusProp.Location
+# type: LocusProp.Type
+# text: str

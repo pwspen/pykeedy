@@ -2,10 +2,10 @@ from pykeedy import VMS
 
 # There are a number of formats you can get the VMS text in:
 # (note: the outputs from to_text and to_pages contain newlines \n)
-text = VMS.to_text()      # Full text as single string
-pages = VMS.to_pages()    # List of strings, each is a page
-lines = VMS.to_lines()    # List of strings, each is a line
-words = VMS.to_words()    # List of strings, each is a word
+text = VMS.to_text()  # Full text as single string
+pages = VMS.to_pages()  # List of strings, each is a page
+lines = VMS.to_lines()  # List of strings, each is a line
+words = VMS.to_words()  # List of strings, each is a word
 
 # For each of these, you can choose the transliteration alphabet (EVA or CUVA) as an argument
 # and whether or not to normalize all gaps to spaces (represented by '.')

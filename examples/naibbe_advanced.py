@@ -4,12 +4,8 @@ from pykeedy.naibbe import NaibbeEncoding, get_default_encoding
 
 # The same example encoding from there:
 simple_encoding = NaibbeEncoding(
-    ngram_slot_tables = [
-        {"a": ["x", "y"],
-         "b": ["j", "la"],
-         "c": ["loong", "c"]}
-    ],
-    table_odds = [3, 1]
+    ngram_slot_tables=[{"a": ["x", "y"], "b": ["j", "la"], "c": ["loong", "c"]}],
+    table_odds=[3, 1],
 )
 # This encoding will encode stuff, but it's not yet the same type of encoding as the default one ("greshko_2507").
 # To get there we need to add some complication: "unigrams" and "bigrams".
@@ -18,21 +14,16 @@ simple_encoding = NaibbeEncoding(
 # This system also defines the number of tables we need: 3.
 # Here is what that looks like with a system that can only encode 2 letters:
 encoding = NaibbeEncoding(
-    ngram_slot_tables = [
+    ngram_slot_tables=[
         # Unigram table
-        {"a": ["x", "y"],
-         "b": ["j", "daiin"]},
-
+        {"a": ["x", "y"], "b": ["j", "daiin"]},
         # Bigram prefix table
-        {"a": ["qo", "da"],
-         "b": ["dai", "ch"]},
-
+        {"a": ["qo", "da"], "b": ["dai", "ch"]},
         # Bigram suffix table
-        {"a": ["keedy", "in"],
-         "b": ["iin", "edy"]}
+        {"a": ["keedy", "in"], "b": ["iin", "edy"]},
     ],
-    table_odds = [3, 1], # Order is same order as in ngram_slot_tables
-    ngram_odds = [2, 1] # Order is [unigram, bigram]
+    table_odds=[3, 1],  # Order is same order as in ngram_slot_tables
+    ngram_odds=[2, 1],  # Order is [unigram, bigram]
 )
 # We also have to introduce another odds list for picking unigrams and bigrams: ngram_odds.
 # [2, 1] means that unigrams will be chosen 2/3 of the time and bigrams 1/3.

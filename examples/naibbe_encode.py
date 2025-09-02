@@ -9,8 +9,8 @@ plain = "this is a test of how the naibbe cipher encodes plaintext"
 # If no seed is supplied, a seed of 42 is used. If you want true randomness
 # (useful for generating a bunch of possible ciphertexts), setting prngseed=None uses a random large number as the seed.
 encoded = naibbe_encrypt(plain, prngseed=999)
-print('\nEncoded:\n')
-print(encoded) # -> resy sheeed shey oto qotody ...
+print("\nEncoded:\n")
+print(encoded)  # -> resy sheeed shey oto qotody ...
 
 # Decrypting is deterministic, but uses properties of the encoding, so this function is tied to the default
 # encoding table (thus the "greshko" in the name), unlike the encoding process.
@@ -19,5 +19,5 @@ print(encoded) # -> resy sheeed shey oto qotody ...
 # Decoding can add or remove characters by guessing wrong, so the output may be a different length than the (spaces-removed) input.
 # On average for long texts, reconstruction rate is about 95% (see test_reconstruction function)
 decoded = greshko_decrypt(encoded)
-print('\nDecoded:\n')
+print("\nDecoded:\n")
 print(decoded)

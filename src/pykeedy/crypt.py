@@ -3,7 +3,10 @@ import numpy as np
 from pykeedy.utils import preprocess
 import re
 
-def naibbe_encrypt(text: str, encoding: NaibbeEncoding | str | None = None, prngseed: int | None = 42) -> str:
+
+def naibbe_encrypt(
+    text: str, encoding: NaibbeEncoding | str | None = None, prngseed: int | None = 42
+) -> str:
     """
     Encrypt text using some Naibbe encoding.
     Note that this is a general implementation for encodings with any number of characters, ngram lengths, probabilities, etc.
@@ -13,9 +16,11 @@ def naibbe_encrypt(text: str, encoding: NaibbeEncoding | str | None = None, prng
     text = preprocess(text)
     alphabet_exclude = f"[^{encoding.alphabet}]"
     orig_len = len(text)
-    text = re.sub(alphabet_exclude, '', text)
+    text = re.sub(alphabet_exclude, "", text)
     if len(text) != orig_len:
-        print(f"Warning: {orig_len - len(text)}/{orig_len} characters were removed from input text because they are not in the encoding alphabet")
+        print(
+            f"Warning: {orig_len - len(text)}/{orig_len} characters were removed from input text because they are not in the encoding alphabet"
+        )
 
     if prngseed is None:
         prngseed = np.random.randint(0, 2**32)
@@ -28,49 +33,60 @@ def naibbe_encrypt(text: str, encoding: NaibbeEncoding | str | None = None, prng
         # example: [1 1 1] -> [0 0.3333 0.6666]
 
         oddsarr = np.array(odds)
-        thresharr = np.roll(np.cumsum(oddsarr/np.sum(oddsarr)), 1)
+        thresharr = np.roll(np.cumsum(oddsarr / np.sum(oddsarr)), 1)
         thresharr[0] = 0.0
         return thresharr
 
-    ngram_length_thresholds = odds_to_thresholds(encoding.ngram_odds) # type: ignore - not None guaranteed during model validation
+    ngram_length_thresholds = odds_to_thresholds(encoding.ngram_odds)  # type: ignore - not None guaranteed during model validation
 
     table_thresholds_array = None
     # make and copy single thresholds table if each has the same odds, otherwise do for each
     # copying means we just assume each table has its own odds instead of branching later
     if encoding.common_table_odds:
-        table_thresholds = odds_to_thresholds(encoding.table_odds) # type: ignore
-        table_thresholds_array = np.array([table_thresholds for _ in range(len(encoding.ngram_slot_tables))])
+        table_thresholds = odds_to_thresholds(encoding.table_odds)  # type: ignore
+        table_thresholds_array = np.array(
+            [table_thresholds for _ in range(len(encoding.ngram_slot_tables))]
+        )
     else:
-        table_thresholds_array = np.array([odds_to_thresholds(to) for to in encoding.table_odds]) # type: ignore
+        table_thresholds_array = np.array(
+            [odds_to_thresholds(to) for to in encoding.table_odds]
+        )  # type: ignore
 
     def select_option(thresholds: np.ndarray) -> int:
-            # using the precomputed threshold table, generate a random number, then see where it falls on the table (the largest index it is larger than)
-            # to select how many characters to encode in a word or which table to use for a character
-            rand = rng.random() # 0 -> 1
-            return np.nonzero(thresholds < rand)[0][-1]
+        # using the precomputed threshold table, generate a random number, then see where it falls on the table (the largest index it is larger than)
+        # to select how many characters to encode in a word or which table to use for a character
+        rand = rng.random()  # 0 -> 1
+        return np.nonzero(thresholds < rand)[0][-1]
 
     i = 0
     encoded = ""
     while i < len(text):
-        gramsize = select_option(ngram_length_thresholds) + 1 # select ngram size
+        gramsize = select_option(ngram_length_thresholds) + 1  # select ngram size
 
-        if i + gramsize > len(text): # not enough characters left for selected ngram size, so use smaller
+        if i + gramsize > len(
+            text
+        ):  # not enough characters left for selected ngram size, so use smaller
             gramsize = len(text) - i
 
-        start_table_idx = 0 if gramsize == 1 else 1 if gramsize == 2 else 3 # Only support up to trigrams (same as NaibbeEncoding)
+        start_table_idx = (
+            0 if gramsize == 1 else 1 if gramsize == 2 else 3
+        )  # Only support up to trigrams (same as NaibbeEncoding)
 
         word = ""
 
         for j in range(gramsize):
             char = text[i + j]
             if char not in str(encoding.alphabet):
-                raise ValueError(f"Character '{char}' at position {i+j} not in encoding alphabet")
+                raise ValueError(
+                    f"Character '{char}' at position {i + j} not in encoding alphabet"
+                )
             table = select_option(table_thresholds_array[start_table_idx + j])
             word += encoding.ngram_slot_tables[start_table_idx + j][char][table]
         i += gramsize
         encoded += word + " "
 
     return encoded.strip()
+
 
 def greshko_decrypt(encoded: str, encoding: NaibbeEncoding | str | None = None) -> str:
     # IMPORTANT: If the encoding is ambiguous (Greshko encoding is), some information is lost in the encryption/decryption process. With this decoding algorithm and the current encoding algorithm reconstruction rate is 95%.
@@ -92,34 +108,38 @@ def greshko_decrypt(encoded: str, encoding: NaibbeEncoding | str | None = None) 
     prefix_only_strs = ["ch", "sh", "cfh", "ckh", "cph", "cth", "f", "k", "p", "t", "x"]
     suffix_only_strs = ["a", "e", "g", "i", "m", "n"]
 
-    t1_slots = [["q", "s", "d", "x"],
-                ["o", "y"],
-                ["d", "r"],
-                ["t", "k", "p", "f"],
-                ["ch", "sh"],
-                ["cth", "ckh", "cph", "cfh"]]
+    t1_slots = [
+        ["q", "s", "d", "x"],
+        ["o", "y"],
+        ["d", "r"],
+        ["t", "k", "p", "f"],
+        ["ch", "sh"],
+        ["cth", "ckh", "cph", "cfh"],
+    ]
 
-    t2_slots = [["e", "ee", "eee", "g"],
-                ["s", "d"],
-                ["o", "a"],
-                ["i", "ii", "iii"],
-                ["d", "l", "r", "m", "n"],
-                ["s"],
-                ["y"]]
+    t2_slots = [
+        ["e", "ee", "eee", "g"],
+        ["s", "d"],
+        ["o", "a"],
+        ["i", "ii", "iii"],
+        ["d", "l", "r", "m", "n"],
+        ["s"],
+        ["y"],
+    ]
 
-    slot_decrypt_tables: list[dict[str, str]] = encoding.get_slot_decrypt_tables # type: ignore
+    slot_decrypt_tables: list[dict[str, str]] = encoding.get_slot_decrypt_tables  # type: ignore
 
-    slot_lists: list[list[str]] = encoding.get_slot_lists # type: ignore
+    slot_lists: list[list[str]] = encoding.get_slot_lists  # type: ignore
 
     def common_prefix_length(s1: str, s2: str) -> int:
         # Finds length of common prefix between two strings
         # "Prefix" used here entirely unrelated to voynich grammar
         i = 0
         min_len = min(len(s1), len(s2))
-        
+
         while i < min_len and s1[i] == s2[i]:
             i += 1
-        
+
         return i
 
     def slot_hit(glyph: str, vord_remaining: str) -> bool:
@@ -146,19 +166,19 @@ def greshko_decrypt(encoded: str, encoding: NaibbeEncoding | str | None = None) 
 
     def step2(vord: str) -> str | None:
         best = None
-        for glyph in prefix_only_strs: # Get rightmost prefix glyph
+        for glyph in prefix_only_strs:  # Get rightmost prefix glyph
             pos = vord.rfind(glyph)
             if pos != -1:
                 if best is None or pos > best:
                     best = pos + len(glyph)
-        for glyph in suffix_only_strs: # Get leftmost suffix glyph
+        for glyph in suffix_only_strs:  # Get leftmost suffix glyph
             pos = vord.find(glyph)
             if pos != -1:
                 if best is None or pos < best:
                     best = pos
         if best and best > 0:
             try:
-                # Sometimes the process is just wrong because type 1 affixes can be suffixes and vice versa, 
+                # Sometimes the process is just wrong because type 1 affixes can be suffixes and vice versa,
                 # so have to catch it and continue to step. words caught here tend to have no type 1 affix glyphs
                 # example: daleor, lsdaiin, oldal, alaiin, aleedal, qodain...
                 return parse_from_breakpoint(vord, best)
@@ -172,14 +192,14 @@ def greshko_decrypt(encoded: str, encoding: NaibbeEncoding | str | None = None) 
 
         try:
             return parse_from_breakpoint(vord, longest_idx)
-        except:
+        except (IndexError, KeyError):
             return None
-        
+
     vords = encoded.split(" ")
-    decoded = "" # We add to this with each decode
-    for vord in vords: # Each word is entirely independent
+    decoded = ""  # We add to this with each decode
+    for vord in vords:  # Each word is entirely independent
         for i, step in enumerate([step1, step2, step3]):
-            res = step(vord) # Result is either successfully decoded text or None
+            res = step(vord)  # Result is either successfully decoded text or None
             if res is not None:
                 decoded += res
                 break

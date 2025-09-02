@@ -12,13 +12,18 @@ Prop.print_props()
 # Notice property syntax is Prop.Type.Val1
 voynich_b = VMS.filter(props=[Prop.CurrierLanguage.B]).to_text()
 
-b_herbal = VMS.filter([Prop.CurrierLanguage.B,
-                       Prop.IllustrationType.Herbal]).to_lines()
+b_herbal = VMS.filter([Prop.CurrierLanguage.B, Prop.IllustrationType.Herbal]).to_lines()
 
-b_herbal_nymphs = VMS.filter([Prop.CurrierLanguage.B,
-                              Prop.IllustrationType.Herbal,
-                              Prop.Type.BiologicalNymphLabel]).to_words()
+b_herbal_nymphs = VMS.filter(
+    [
+        Prop.CurrierLanguage.B,
+        Prop.IllustrationType.Herbal,
+        Prop.Type.BiologicalNymphLabel,
+    ]
+).to_words()
 
-print(b_herbal_nymphs) # [] - there are no voynich b herbal nymph labels (see warning also)
+print(
+    b_herbal_nymphs
+)  # [] - there are no voynich b herbal nymph labels (see warning also)
 
 # If you need more advanced filtering operations see example filtering_custom.py

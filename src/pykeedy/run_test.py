@@ -17,29 +17,39 @@ def test_reconstruction(text: str, n: int = 1000) -> float:
         for i, ca in enumerate(a):
             curr = [i + 1]
             for j, cb in enumerate(b):
-                curr.append(min(prev[j + 1] + 1,      # deletion
-                            curr[j] + 1,           # insertion  
-                            prev[j] + (ca != cb))) # substitution
+                curr.append(
+                    min(
+                        prev[j + 1] + 1,  # deletion
+                        curr[j] + 1,  # insertion
+                        prev[j] + (ca != cb),
+                    )
+                )  # substitution
             prev = curr
         return prev[-1]
 
     avg = 0
     pre = preprocess(text)
     for i in range(n):
-        decoded = greshko_decrypt(naibbe_encrypt(text, prngseed=np.random.randint(0, 2**32)))
+        decoded = greshko_decrypt(
+            naibbe_encrypt(text, prngseed=np.random.randint(0, 2**32))
+        )
         correct = len(pre) - levenshtein(decoded, pre)
         # print(decoded)
         # print(pre)
         # print(correct)
         # print(len(pre))
-        avg += correct/len(pre)
+        avg += correct / len(pre)
 
     rec = avg / n
-    print(f"Reconstruction accuracy: {rec*100:.2f}% over {n} trials of text length {len(pre)}")
+    print(
+        f"Reconstruction accuracy: {rec * 100:.2f}% over {n} trials of text length {len(pre)}"
+    )
     return rec
 
 
-def test_entropy(encode_seeds: int = 1, mode: Literal["char", "word"] = "char") -> dict[str, tuple[float, float]]:
+def test_entropy(
+    encode_seeds: int = 1, mode: Literal["char", "word"] = "char"
+) -> dict[str, tuple[float, float]]:
     # Load all available texts and encrypt each encode_seeds times
     # Add vms to corpus then calculate shannon & conditional entropy of each and return dict {name: (shannon, conditional)}
     if mode not in ("char", "word"):
@@ -53,7 +63,7 @@ def test_entropy(encode_seeds: int = 1, mode: Literal["char", "word"] = "char") 
     all["vms"] = VMS.to_text()
     if mode == "word":
         for name, text in all.items():
-            all[name] = text.split(' ')
+            all[name] = text.split(" ")
     results = {}
     for name, text in all.items():
         results[name] = (shannon_entropy(text), conditional_entropy(text))

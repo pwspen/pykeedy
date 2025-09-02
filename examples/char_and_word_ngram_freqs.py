@@ -11,4 +11,8 @@ for mode in ["char", "word"]:
     for i in range(3):
         # saves results in current folder as pngs
         gramsize = i + 1
-        barplot(frequency_rank(text, n=gramsize), key=(f"{mode} {gramsize}-gram", "Frequency"), fname=f"vms_{mode}_{gramsize}-gram_freq.png")
+        barplot(
+            frequency_rank(text, n=gramsize),
+            key=(f"{mode} {gramsize}-gram", "Frequency"),
+            fname=f"vms_{mode}_{gramsize}-gram_freq.png",
+        )
