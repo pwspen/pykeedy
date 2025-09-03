@@ -64,6 +64,7 @@ results = {name: (shannon_entropy(text), conditional_entropy(text))
 
 scatterplot(results) # Saves to scatterplot.png
 ```
+[result](/examples/results/encrypted_entropy.png) with all encrypted texts in lower left
 
 > [!WARNING] 
 > This library is not yet stable. You may find bugs and updates may break things. Please report any bugs.
