@@ -127,7 +127,7 @@ def per_manuscript(
         many_occurs = {k: sum(v) / len(v) for k, v in all_pos.items() if len(v) > 200}
         barplot(
             many_occurs,
-            key=("Letter", "Avg pos in word"),
+            key=("Letter (most common on left)", "Avg pos in word"),
             fname=f"{output_dir}/{name}_letters_pos_in_words.png",
             n_max=len(many_occurs),
             color=color,

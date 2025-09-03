@@ -59,7 +59,7 @@ def cooccurence_matrix(
     # Generate n-grams, excluding any containing spaces
     # TODO add option that includes spaces to calculate most common first and last letters
     ngrams = []
-    exclude = [" ", "\n"]
+    exclude = [" ", "\n", "."]
     for i in range(len(seq) - n + 1):
         ngram = tuple(seq[i : i + n])
         if any(elem in exclude for elem in ngram):

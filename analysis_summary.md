@@ -4,13 +4,19 @@ The clump in the bottom left is all the Naibbe encrypted texts, with similar ent
 </p>
 <br></br>
 <br></br>
-<br></br>
 Red: Dante's Inferno (Italian)
+<br></br>
 Blue: Der Meide Kranz (German)
+<br></br>
 Green: Pliny's Naturalis Historia (Latin)
+<br></br>
 Yellow: Voynich Manuscript
+<br></br>
 (This is the complete set of texts currently available in this library)
 <br></br>
+Frequency is normalized, so 0.1 means that character or word is 10% of the total chars / words, 0.001 means 1/1000 of total, etc.
+<br></br>
+Below: Character n-grams
 <br></br>
 
 <p float="left">
@@ -47,6 +53,7 @@ Yellow: Voynich Manuscript
 <br></br>
 <br></br>
 <br></br>
+Below: Word n-grams
 <br></br>
 
 <p float="left">
@@ -82,7 +89,9 @@ Yellow: Voynich Manuscript
 <br></br>
 <br></br>
 <br></br>
+Below: Character and word co-occurences, similarly normalized (a-e = 0.1 means it is 10% of all letter pairs)
 <br></br>
+20 most common shown for each
 <br></br>
 
 <p float="left">
@@ -107,6 +116,7 @@ Yellow: Voynich Manuscript
 <br></br>
 <br></br>
 <br></br>
+Below: Word lengths (not normalized)
 <br></br>
 
 <p float="left">
@@ -118,7 +128,9 @@ Yellow: Voynich Manuscript
 <br></br>
 <br></br>
 <br></br>
+Below: Average positions of letters in words, words in lines, and words in manuscripts
 <br></br>
+20 most common items shown for each, most common always on left
 <br></br>
 
 <p float="left">
