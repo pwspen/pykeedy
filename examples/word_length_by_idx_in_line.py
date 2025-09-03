@@ -25,6 +25,12 @@ results = {
     idx: sum(lengths) / len(lengths) for idx, lengths in word_lengths_by_idx.items()
 }
 
+
+def custom(plt):
+    plt.ylim(3, 6)
+    plt.grid(True, axis="y")  # It's plt.grid(), not plt.show_grid()
+
+
 barplot(
     results,
     ax_names=(
@@ -33,4 +39,5 @@ barplot(
     ),
     n_max=int(avg_line_length + stddev_line_length + 5),
     fname="word_length_by_idx_in_line.png",
+    customize_fn=custom,
 )

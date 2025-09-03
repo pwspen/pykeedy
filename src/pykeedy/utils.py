@@ -1,7 +1,7 @@
 from importlib import resources
 import numpy as np
 import matplotlib.pyplot as plt
-from typing import Sequence
+from typing import Sequence, Callable
 import regex
 import re
 from dataclasses import dataclass
@@ -116,6 +116,7 @@ def barplot(
     n_max: int = 20,
     color: str | None = None,
     title: str | None = None,
+    customize_fn: Callable | None = None,
 ) -> None:
     names, values = zip(*d.items())
     names, values = list(names), list(values)
@@ -126,6 +127,10 @@ def barplot(
     add_axlabels(ax_names)
     if title:
         plt.title(title)
+
+    if customize_fn:
+        customize_fn(plt)
+
     plt.xticks(rotation=45, ha="right")
     plt.tight_layout()
     plt.savefig(fname)
