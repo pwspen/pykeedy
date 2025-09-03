@@ -78,7 +78,7 @@ def analysis_to_md(
     # Generate markdown content
     markdown_lines = []
 
-    breaks = 2
+    breaks = 5
 
     # Process cross-manuscript images first
     for pattern in cross_manuscript:
@@ -86,7 +86,7 @@ def analysis_to_md(
         markdown_lines.append('<p float="left">')
         markdown_lines.append(f'  <img src="{image_src}" width="{total_width}" />')
         markdown_lines.append("</p>")
-    markdown_lines.append("<br>" * breaks)
+    markdown_lines.append("<br></br>\n" * breaks)
     # Process per-manuscript images grouped by type
     num_manuscripts = len(manuscripts)
     individual_width = (
@@ -105,7 +105,7 @@ def analysis_to_md(
                 )
 
             markdown_lines.append("</p>")
-            markdown_lines.append("<br>" * breaks)
+            markdown_lines.append("<br></br>\n" * breaks)
 
     # Write markdown file
     with open(output_markdown_fname, "w") as f:

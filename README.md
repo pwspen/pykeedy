@@ -1,5 +1,5 @@
 <p align="center">
-  <span><img src="assets/logo.png" /></span>
+  <img src="assets/logo.png" />
 </p>
 
 A Python library for easy statistical analysis of the Voynich Manuscript.
@@ -28,7 +28,9 @@ pip install -e .
     - entropy
         - single (Shannon), pair, conditional
     - Position distributions (letter in word, word in line, letter in page, etc)
-- [All of these plots were generated with a single function call](/analysis_summary.md) (see [examples/full_analysis.py](examples/full_analysis.py))
+- Highly composable and extensible
+- Automatic analysis: [All of these plots were generated with a single function call](/analysis_summary.md) 
+    - (see [examples/full_analysis.py](examples/full_analysis.py))
 
 ## Usage
 ```python
@@ -119,7 +121,7 @@ Issues & PRs welcome!
 - Option to generate subplots
 - More options for dealing with spaces and newlines in entropy, freq, cooccurence analysis
 - STA alphabet support
-- Glyph and vord pair attraction symmetry scalar
+- character and word pair attraction symmetry scalar
 - Support for recognizing single glyphs in non-basic EVA
 - Measure of Naibbe encoding ambiguity
 - Voynich font alongside transliteration for plots
