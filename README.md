@@ -17,7 +17,7 @@ pip install -e .
 ```
 
 ## Features
-- Easily-loadable VMS transliteration (EVA or CUVA alphabet)
+- Comes with easily-loadable VMS transliteration (EVA or CUVA alphabet)
 - Filtering by every available property (Currier language, illustration type, locus type, etc)
 - Naibbe encoder supporting arbitrary encoding tables + decoder implementing algorithm from paper
 - Handful of comparison manuscripts in European languages + easily load and chuck em all into the same analysis
