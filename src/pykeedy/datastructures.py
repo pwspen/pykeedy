@@ -446,6 +446,12 @@ def decompose(source: VMSObject | list[VMSObject]) -> str:
 # Helper class to load from transliteration file and create Manuscript objects, returning it or its text/lines/words/filtered etc.
 class VMS:
     @classmethod
+    def from_loci(
+        cls, loci: list[Locus], source_filename: str | None = None
+    ) -> Manuscript:
+        return Manuscript(loci=loci, source_filename=source_filename)
+
+    @classmethod
     def filter(cls, props: Sequence[LocusPropType] | LocusPropType) -> Manuscript:
         if isinstance(props, LocusPropType):
             props = [props]

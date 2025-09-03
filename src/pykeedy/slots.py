@@ -1,3 +1,7 @@
+# Slot grammar source: 'Mauro' on voynich.ninja
+# https://www.voynich.ninja/thread-4418.html
+# https://drive.google.com/file/d/1Gnkp9KfBMLSWHgk7cAYnSj5rGzbhLUoS/view
+
 BASIC13 = [
     ["ch", "sh", "q", "y"],
     ["e"],

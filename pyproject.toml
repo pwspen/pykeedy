@@ -31,4 +31,6 @@ data = { "data" = "src/pykeedy/data" }
 [dependency-groups]
 dev = [
     "pre-commit>=4.3.0",
+    "pytest>=8.4.1",
+    "tox>=4.30.1",
 ]

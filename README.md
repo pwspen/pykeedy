@@ -13,7 +13,7 @@ Development:
 ```
 git clone https://github.com/pwspen/pykeedy.git
 cd pykeedy
-pip install -e .
+pip install -e .[dev]
 ```
 
 ## Features
