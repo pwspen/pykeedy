@@ -63,6 +63,9 @@ results = {name: (shannon_entropy(text), conditional_entropy(text))
 scatterplot(results) # Saves to scatterplot.png
 ```
 
+> [!WARNING] 
+> This library is not yet stable. You may find bugs and updates may break things. Please report any bugs.
+
 ## Documentation
 The current documentation is 10+ thoroughly commented examples which you can find in the `examples` folder.
 There are examples that plot each of the following in around 20 lines or less:
@@ -112,6 +115,7 @@ Issues & PRs welcome!
 - docstrings
 - then generate real docs
 - Find better corpus for comparison manuscripts
+- More composable system for corpus
 - Option to generate subplots
 - More options for dealing with spaces and newlines in entropy, freq, cooccurence analysis
 - STA alphabet support

@@ -5,6 +5,7 @@ from typing import Sequence
 import regex
 import re
 from dataclasses import dataclass
+from pathlib import Path
 
 
 def preprocess(text: str) -> str:
@@ -39,6 +40,7 @@ class PlainManuscript:
 
 
 def load_corpus(
+    from_dir: str | None = None,
     names: str | list[str] | None = None,
     prep: bool = True,
     limit_length: int | None = 250_000,
@@ -46,9 +48,15 @@ def load_corpus(
 ) -> dict[str, str | PlainManuscript]:
     """
     Load plaintext(s) and return dict[name: text]
+    Loads from library corpus if from_dir is None
+    Otherwise uses all .txt files in from_dir, filename (sans .txt) becoming the name
     Accepts single name, list of names, or None for all available texts
     """
-    text_dir = resources.files("pykeedy.data.plaintexts")
+    if from_dir is not None:
+        # Convert string path to Traversable using pathlib.Path
+        text_dir = Path(from_dir)
+    else:
+        text_dir = resources.files("pykeedy.data.plaintexts")
     result = {}
     for entry in text_dir.iterdir():
         if entry.is_file() and entry.name.endswith(".txt"):
@@ -71,6 +79,8 @@ def load_corpus(
                     f"Warning: Truncated text '{name}' from {orig_len} to {limit_length} characters"
                 )
             result[name] = text
+    if not result:
+        raise ValueError("No texts found - check from_dir and names arguments")
     if give_objects:
         result = {name: PlainManuscript(text) for name, text in result.items()}
 
@@ -141,12 +151,11 @@ def heatmap(
         labels = labels[:n_max]
         matrix_array = matrix_array[:n_max, :n_max]
 
-    if title:
-        plt.title(title)
-
     # Create the heatmap
     fig, ax = plt.subplots(figsize=(8, 6))
     im = ax.imshow(matrix_array, cmap="plasma", aspect="auto")
+    if title:
+        plt.title(title, pad=15)
 
     # Set the ticks and labels
     ax.set_xticks(range(len(labels)))

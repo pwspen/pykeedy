@@ -155,6 +155,8 @@ def per_manuscript(
 
 def run_full_analysis(
     voynich: Manuscript,
+    comparison_texts_dir: str | None = None,
+    comparison_text_names: list[str] | None = None,
     output_dir: str = "full_analysis_results",
     add_encrypted: bool = True,
     run_entropy: bool = True,
@@ -174,7 +176,14 @@ def run_full_analysis(
 
     os.makedirs(output_dir, exist_ok=True)
 
-    texts = load_corpus(give_objects=True)
+    if comparison_texts_dir:
+        texts = load_corpus(
+            from_dir=comparison_texts_dir,
+            names=comparison_text_names,
+            give_objects=True,
+        )
+    else:
+        texts = load_corpus(names=comparison_text_names, give_objects=True)
     texts["VMS"] = voynich
 
     if run_cross_manuscript:
@@ -202,7 +211,7 @@ def run_full_analysis(
     analysis_manifest = {
         "analysis": {
             "generated_at": datetime.now().isoformat(),
-            "manuscripts": [list(texts.keys())],
+            "manuscripts": list(texts.keys()),
             "cross_manuscript": ["entropy_comparison.png"],
             "per_manuscript": {
                 # If any of the calculated plots are missing from here they will not be displayed in whatever parses this

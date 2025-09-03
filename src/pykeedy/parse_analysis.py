@@ -48,8 +48,6 @@ def analysis_to_md(
     for analysis_type, pattern_list in per_manuscript.items():
         for pattern in pattern_list:
             for manuscript in manuscripts:
-                print(manuscript)
-                print(manuscripts)
                 filename = pattern.replace("<name>", manuscript)
                 expected_files.append(filename)
 
@@ -80,13 +78,15 @@ def analysis_to_md(
     # Generate markdown content
     markdown_lines = []
 
+    breaks = 2
+
     # Process cross-manuscript images first
     for pattern in cross_manuscript:
         image_src = os.path.join(md_to_imgs_path, pattern).replace("\\", "/")
         markdown_lines.append('<p float="left">')
         markdown_lines.append(f'  <img src="{image_src}" width="{total_width}" />')
         markdown_lines.append("</p>")
-
+    markdown_lines.append("<br>" * breaks)
     # Process per-manuscript images grouped by type
     num_manuscripts = len(manuscripts)
     individual_width = (
@@ -105,6 +105,7 @@ def analysis_to_md(
                 )
 
             markdown_lines.append("</p>")
+            markdown_lines.append("<br>" * breaks)
 
     # Write markdown file
     with open(output_markdown_fname, "w") as f:
