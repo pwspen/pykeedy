@@ -96,14 +96,14 @@ def add_axlabels(key: Sequence[str]) -> None:
 
 
 def scatterplot(
-    d: dict, key: Sequence[str] = ("X", "Y"), fname: str = "scatterplot.png"
+    d: dict, ax_names: Sequence[str] = ("X", "Y"), fname: str = "scatterplot.png"
 ) -> None:
     # Expect dict of {name: (x, y)} pairs
     # name: str, x & y: float
     for i, (name, (x, y)) in enumerate(d.items()):
         plt.scatter(x, y, label=name, c=f"C{i}")
         plt.annotate(name, (x, y), xytext=(5, 5), textcoords="offset points")
-    add_axlabels(key)
+    add_axlabels(ax_names)
     plt.savefig(fname)
     plt.close()
     print(f"Saved scatter plot to {fname}")
@@ -111,7 +111,7 @@ def scatterplot(
 
 def barplot(
     d: dict,
-    key: Sequence[str] = ("Item", "Number"),
+    ax_names: Sequence[str] = ("Item", "Number"),
     fname: str = "barplot.png",
     n_max: int = 20,
     color: str | None = None,
@@ -123,7 +123,7 @@ def barplot(
         print(f"Warning: More than {n_max=} items passed to barplot, truncating")
         names, values = names[:n_max], values[:n_max]
     plt.bar(names, values, color=color)
-    add_axlabels(key)
+    add_axlabels(ax_names)
     if title:
         plt.title(title)
     plt.xticks(rotation=45, ha="right")
@@ -136,7 +136,7 @@ def barplot(
 def heatmap(
     labels: list[str],
     matrix: list[list[float]],
-    key: Sequence[str] = ("First element", "Second element"),
+    ax_names: Sequence[str] = ("First element", "Second element"),
     fname: str = "heatmap.png",
     n_max: int = 20,
     title: str | None = None,
@@ -178,7 +178,7 @@ def heatmap(
                     j, i, matrix_array[i, j], ha="center", va="center", color="black"
                 )
 
-    add_axlabels(key)
+    add_axlabels(ax_names)
 
     plt.tight_layout()
     plt.savefig(fname)
@@ -188,7 +188,7 @@ def heatmap(
 
 def seriesplot(
     d: dict,
-    key: Sequence[str] = ("X", "Y"),
+    ax_names: Sequence[str] = ("X", "Y"),
     fname: str = "seriesplot.png",
     title: str | None = None,
 ) -> None:
@@ -205,7 +205,7 @@ def seriesplot(
 
     plt.legend()
 
-    add_axlabels(key)
+    add_axlabels(ax_names)
 
     plt.tight_layout()
     plt.savefig(fname)

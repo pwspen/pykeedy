@@ -13,7 +13,7 @@ results = {
 }
 
 seriesplot(
-    results, key=("Word length", "Count"), fname="word_lengths.png"
+    results, ax_names=("Word length", "Count"), fname="word_lengths.png"
 )  # saves "seriesplot.png" in current folder
 
 # You can also do this quite easily without the library, and the library

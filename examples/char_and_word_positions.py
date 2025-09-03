@@ -29,7 +29,7 @@ many_occurs = {k: sum(v) / len(v) for k, v in all_pos.items() if len(v) > 200}
 
 barplot(
     many_occurs,
-    key=("Letter", "Avg pos in word"),
+    ax_names=("Letter", "Avg pos in word"),
     fname="vms_letter_positions_in_words.png",
     n_max=len(many_occurs),
 )
@@ -45,20 +45,20 @@ top_words = [k for k, v in frequency_rank(word_tokens).items()][:20]
 # Word mode only counts occurences that are bounded by . or \n on both sides (otherwise e.g. there's 3 'a' words in '.aaa.')
 barplot(
     position_distribution(top_words, lines, word_mode=True, average=True),
-    key=("Word (most common on left)", "Avg pos in line"),
+    ax_names=("Word (most common on left)", "Avg pos in line"),
     fname="vms_top_words_pos_in_lines.png",
 )
 
 # As expected for a randomish distribution, they are mostly grouped around 0.5 (middle of page)
 barplot(
     position_distribution(top_words, pages, word_mode=True, average=True),
-    key=("Word (most common on left)", "Avg pos in page"),
+    ax_names=("Word (most common on left)", "Avg pos in page"),
     fname="vms_top_words_pos_in_page.png",
 )
 
 # However, they are not so evenly distributed in the manuscript as a whole
 barplot(
     position_distribution(top_words, [text], word_mode=True, average=True),
-    key=("Word (most common on left)", "Avg pos in VMS"),
+    ax_names=("Word (most common on left)", "Avg pos in VMS"),
     fname="vms_top_words_pos_in_manuscript.png",
 )

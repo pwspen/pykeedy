@@ -17,6 +17,6 @@ for name, text in plain.items():
 # saves in current folder
 scatterplot(
     results,
-    key=("character entropy (bits)", "conditional entropy (bits)"),
+    ax_names=("character entropy (bits)", "conditional entropy (bits)"),
     fname="entropy_comparison.png",
 )

@@ -13,6 +13,6 @@ for mode in ["char", "word"]:
         gramsize = i + 1
         barplot(
             frequency_rank(text, n=gramsize),
-            key=(f"{mode} {gramsize}-gram", "Frequency"),
+            ax_names=(f"{mode} {gramsize}-gram", "Frequency"),
             fname=f"vms_{mode}_{gramsize}-gram_freq.png",
         )

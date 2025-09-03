@@ -26,6 +26,6 @@ for name, text in analyze.items():
 # saves in current folder
 scatterplot(
     results,
-    key=("character entropy (bits)", "conditional entropy (bits)"),
+    ax_names=("character entropy (bits)", "conditional entropy (bits)"),
     fname="encrypted_entropy.png",
 )

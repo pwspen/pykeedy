@@ -43,7 +43,7 @@ def cross_manuscript(
         # Generate entropy plot
         scatterplot(
             entropy,
-            key=("character entropy (bits)", "conditional entropy (bits)"),
+            ax_names=("character entropy (bits)", "conditional entropy (bits)"),
             fname=f"{output_dir}/entropy_comparison.png",
         )
 
@@ -85,7 +85,7 @@ def per_manuscript(
                 gramsize = i + 1
                 barplot(
                     frequency_rank(text, n=gramsize),
-                    key=(f"{mode} {gramsize}-gram", "Frequency"),
+                    ax_names=(f"{mode} {gramsize}-gram", "Frequency"),
                     fname=f"{output_dir}/{name}_{mode}_{gramsize}-gram_freq.png",
                     color=color,
                     title=f"{name} ngram freq",
@@ -109,7 +109,7 @@ def per_manuscript(
 
         seriesplot(
             results,
-            key=("Word length", "Count"),
+            ax_names=("Word length", "Count"),
             fname=f"{output_dir}/{name}_word_lengths.png",
             title=f"{name} word length",
         )
@@ -127,7 +127,7 @@ def per_manuscript(
         many_occurs = {k: sum(v) / len(v) for k, v in all_pos.items() if len(v) > 200}
         barplot(
             many_occurs,
-            key=("Letter (most common on left)", "Avg pos in word"),
+            ax_names=("Letter (most common on left)", "Avg pos in word"),
             fname=f"{output_dir}/{name}_letters_pos_in_words.png",
             n_max=len(many_occurs),
             color=color,
@@ -139,14 +139,14 @@ def per_manuscript(
 
         barplot(
             position_distribution(top_words, lines, word_mode=True, average=True),
-            key=("Word (most common on left)", "Avg pos in line"),
+            ax_names=("Word (most common on left)", "Avg pos in line"),
             fname=f"{output_dir}/{name}_words_pos_in_lines.png",
             color=color,
             title=f"{name} word positions in lines",
         )
         barplot(
             position_distribution(top_words, [text], word_mode=True, average=True),
-            key=("Word (most common on left)", "Avg pos in VMS"),
+            ax_names=("Word (most common on left)", "Avg pos in VMS"),
             fname=f"{output_dir}/{name}_words_pos_in_manuscript.png",
             color=color,
             title=f"{name} word positions in manuscript",
