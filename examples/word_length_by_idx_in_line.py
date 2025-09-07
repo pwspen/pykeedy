@@ -8,7 +8,7 @@ paragraph_lines = VMS.from_loci(
 
 lines_by_word = [line.split(".") for line in paragraph_lines]
 
-lines_by_word = [line for line in lines_by_word if len(line) > 5]
+# lines_by_word = [line for line in lines_by_word if len(line) > 5]
 lengths = [len(line) for line in lines_by_word]
 avg_line_length = sum(lengths) / len(lengths)
 stddev_line_length = (
@@ -28,7 +28,7 @@ results = {
 
 def custom(plt):
     plt.ylim(3, 6)
-    plt.grid(True, axis="y")  # It's plt.grid(), not plt.show_grid()
+    plt.grid(True, axis="y")
 
 
 barplot(

@@ -1,5 +1,5 @@
 from pykeedy import VMS
-from pykeedy.analysis import conditional_entropy, shannon_entropy
+from pykeedy.analysis import conditional_entropy, shannon_entropy, levenshtein_distance
 from typing import Literal
 from pykeedy.crypt import greshko_decrypt, naibbe_encrypt
 from pykeedy.utils import load_corpus, preprocess
@@ -7,33 +7,13 @@ import numpy as np
 
 
 def test_reconstruction(text: str, n: int = 1000) -> float:
-    def levenshtein(a, b):
-        if len(a) < len(b):
-            return levenshtein(b, a)
-        if len(b) == 0:
-            return len(a)
-
-        prev = list(range(len(b) + 1))
-        for i, ca in enumerate(a):
-            curr = [i + 1]
-            for j, cb in enumerate(b):
-                curr.append(
-                    min(
-                        prev[j + 1] + 1,  # deletion
-                        curr[j] + 1,  # insertion
-                        prev[j] + (ca != cb),
-                    )
-                )  # substitution
-            prev = curr
-        return prev[-1]
-
     avg = 0
     pre = preprocess(text)
     for i in range(n):
         decoded = greshko_decrypt(
             naibbe_encrypt(text, prngseed=np.random.randint(0, 2**32))
         )
-        correct = len(pre) - levenshtein(decoded, pre)
+        correct = len(pre) - levenshtein_distance(decoded, pre)
         # print(decoded)
         # print(pre)
         # print(correct)
@@ -59,7 +39,7 @@ def test_entropy(
     for name, text in plain.items():
         all[name] = text
         for i in range(encode_seeds):
-            all[name + f"_enc{i}"] = naibbe_encrypt(text, prngseed=i)
+            all[name + f"_enc{i}"] = naibbe_encrypt(text.to_text(), prngseed=i)
     all["vms"] = VMS.to_text()
     if mode == "word":
         for name, text in all.items():

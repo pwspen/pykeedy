@@ -1,9 +1,9 @@
-from pykeedy.naibbe import NaibbeEncoding, get_default_encoding
+from pykeedy.naibbe import ConstructNaibbeEncoding, get_default_encoding
 
 # Recommended to look at example naibbe_custom.py before this one
 
 # The same example encoding from there:
-simple_encoding = NaibbeEncoding(
+simple_encoding = ConstructNaibbeEncoding(
     ngram_slot_tables=[{"a": ["x", "y"], "b": ["j", "la"], "c": ["loong", "c"]}],
     table_odds=[3, 1],
 )
@@ -13,7 +13,7 @@ simple_encoding = NaibbeEncoding(
 # And importantly, for a single letter, the things it can map to as a unigram, first part of a bigram (bigram prefix), or second part, are 3 different sets of encodings.
 # This system also defines the number of tables we need: 3.
 # Here is what that looks like with a system that can only encode 2 letters:
-encoding = NaibbeEncoding(
+encoding = ConstructNaibbeEncoding(
     ngram_slot_tables=[
         # Unigram table
         {"a": ["x", "y"], "b": ["j", "daiin"]},

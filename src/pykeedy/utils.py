@@ -4,8 +4,9 @@ import matplotlib.pyplot as plt
 from typing import Sequence, Callable
 import regex
 import re
-from dataclasses import dataclass
 from pathlib import Path
+
+from pykeedy.datastructures import VMS, Manuscript, PlainManuscript
 
 
 def preprocess(text: str) -> str:
@@ -17,26 +18,15 @@ def preprocess(text: str) -> str:
     # \p{Z} - Separator characters including spaces, tabs, etc
     # regex is imported because standard re does not this type of syntax
     remove = regex.compile(
-        r"[\p{P}|\p{S}]+", regex.UNICODE
+        r"[\p{P}|\p{S}]+",
+        regex.UNICODE,  # type: ignore - ty doesn't understand regex lib
     )  # space at end of pattern is important!
     text = remove.sub("", text)
+
+    # Replace 2 or more newlines with single newline
     text = re.sub(r"(?:\r?\n){2,}", "\n", text)
     text = text.lower()
     return text
-
-
-@dataclass
-class PlainManuscript:
-    text: str
-
-    def to_text(self) -> str:
-        return self.text
-
-    def to_words(self) -> list[str]:
-        return self.text.split()
-
-    def to_lines(self) -> list[str]:
-        return self.text.splitlines()
 
 
 def load_corpus(
@@ -44,8 +34,8 @@ def load_corpus(
     names: str | list[str] | None = None,
     prep: bool = True,
     limit_length: int | None = 250_000,
-    give_objects: bool = False,
-) -> dict[str, str | PlainManuscript]:
+    include_vms: bool = False,
+) -> dict[str, Manuscript]:
     """
     Load plaintext(s) and return dict[name: text]
     Loads from library corpus if from_dir is None
@@ -57,7 +47,7 @@ def load_corpus(
         text_dir = Path(from_dir)
     else:
         text_dir = resources.files("pykeedy.data.plaintexts")
-    result = {}
+    text_result: dict[str, str] = {}
     for entry in text_dir.iterdir():
         if entry.is_file() and entry.name.endswith(".txt"):
             name = entry.name.strip(".txt")
@@ -78,11 +68,15 @@ def load_corpus(
                 print(
                     f"Warning: Truncated text '{name}' from {orig_len} to {limit_length} characters"
                 )
-            result[name] = text
-    if not result:
+            text_result[name] = text
+    if not text_result:
         raise ValueError("No texts found - check from_dir and names arguments")
-    if give_objects:
-        result = {name: PlainManuscript(text) for name, text in result.items()}
+
+    result: dict[str, Manuscript] = {
+        name: PlainManuscript(text) for name, text in text_result.items()
+    }
+    if include_vms:
+        result["VMS"] = VMS.get()
 
     return result  # type: ignore
 
@@ -98,11 +92,26 @@ def add_axlabels(key: Sequence[str]) -> None:
 def scatterplot(
     d: dict, ax_names: Sequence[str] = ("X", "Y"), fname: str = "scatterplot.png"
 ) -> None:
-    # Expect dict of {name: (x, y)} pairs
+    # Expect one of:
+    # dict of {name: (x, y)} : separate labelled points
+    # dict of {name: [(x1, y1), (x2, y2), ...]} : separate labelled series
     # name: str, x & y: float
-    for i, (name, (x, y)) in enumerate(d.items()):
-        plt.scatter(x, y, label=name, c=f"C{i}")
-        plt.annotate(name, (x, y), xytext=(5, 5), textcoords="offset points")
+    for i, (name, item) in enumerate(d.items()):
+        color = f"C{i}"
+        if isinstance(item, list) and len(item) > 0:
+            x, y = zip(*item)
+            plt.plot(x, y, color=color, alpha=0.7, linewidth=1.5, linestyle="-")
+            plt.annotate(
+                name, (x[-1], y[-1]), xytext=(5, 5), textcoords="offset points"
+            )
+        elif isinstance(item, tuple) and len(item) == 2:
+            x, y = item
+            plt.annotate(name, (x, y), xytext=(5, 5), textcoords="offset points")
+        else:
+            raise ValueError(
+                "Values in d must be either (x,y) tuples or lists of (x,y) tuples"
+            )
+        plt.scatter(x, y, label=name, c=color)
     add_axlabels(ax_names)
     plt.savefig(fname)
     plt.close()
@@ -196,6 +205,7 @@ def seriesplot(
     ax_names: Sequence[str] = ("X", "Y"),
     fname: str = "seriesplot.png",
     title: str | None = None,
+    customize_fn: Callable | None = None,
 ) -> None:
     # Expect dict of {name: ((x1,y1), (x2,y2), ...)} pairs
     # name: str, x & y: float
@@ -207,6 +217,8 @@ def seriesplot(
 
     if title:
         plt.title(title)
+    if customize_fn:
+        customize_fn(plt)
 
     plt.legend()
 

@@ -1,12 +1,16 @@
 import numpy as np
-from collections import Counter
-
-from collections import defaultdict
+from collections import Counter, defaultdict
+from difflib import SequenceMatcher
+from dataclasses import dataclass
 import re
+from typing import Iterable
 
 
 def frequency_rank(
-    text: str | list[str], n: int = 1, normalize: bool = True
+    text: str | list[str],
+    n: int = 1,
+    normalize: bool = True,
+    exclude_below_len: int = 2,
 ) -> dict[str, float]:
     # Accept either a string and return character frequency rank,
     # Or a list of words and return word frequency rank.
@@ -33,6 +37,11 @@ def frequency_rank(
 
     result: dict[str, int | float] = {}
     for idx in sorted_indices:
+        if not char_level:
+            if all(len(part) < exclude_below_len for part in unique[idx]):
+                # Without this, "word-level" ngrams are largely dominated by
+                # space separated single characters
+                continue
         key = joiner.join(unique[idx])  # works for all n, including n==1
         if " " in key:
             key = f"'{key}'"
@@ -107,32 +116,55 @@ def shannon_entropy(text: str | list[str]) -> float:
     # Or a list of words and return word entropy.
     seq = np.array(list(text)) if isinstance(text, str) else np.array(text)
     unique_chars, counts = np.unique(seq, return_counts=True)
-    probabilities = counts / len(text)
+    probabilities = counts / len(seq)
     entropy = -np.sum(probabilities * np.log2(probabilities + 1e-10))
     return float(entropy)
 
 
-def joint_entropy(text: str | list[str], n: int = 2) -> float:
+def joint_entropy(
+    text: str | list[str], n: int = 2, exclude_containing: list[str] | None = None
+) -> tuple[float, list[str]]:
     seq = np.array(list(text)) if isinstance(text, str) else np.array(text)
 
     if len(seq) < n:
-        return 0.0
+        return (0.0, [])
 
     # Get each ngram from sequence
     ngrams = [tuple(seq[i : i + n]) for i in range(len(seq) - n + 1)]
+    if exclude_containing:
+        exclude = set(exclude_containing)
+        ngrams = [
+            ngram for ngram in ngrams if not any(elem in ngram for elem in exclude)
+        ]
+    first_chars = [ngram[0] for ngram in ngrams]
     unique_ngrams, counts = np.unique(ngrams, axis=0, return_counts=True)
     probabilities = counts / len(ngrams)
     entropy = -np.sum(probabilities * np.log2(probabilities + 1e-10))
-    return float(entropy)
+
+    return float(entropy), first_chars
 
 
-def conditional_entropy(text: str | list[str], n: int = 2) -> float:
-    return joint_entropy(text, n) - shannon_entropy(text)
+def conditional_entropy(
+    text: str | list[str], n: int = 2, exclude_containing: list[str] | None = None
+) -> float:
+    # Joint and shannon must be in the same probability space
+    # Shannon must be on only the first characters in ngrams,
+    # not the whole text
+    # If nothing is excluded, this is just the text with final n-1 chars removed
+    joint, first_chars = joint_entropy(text, n, exclude_containing)
+    return joint - shannon_entropy(first_chars)
 
 
-def length_distribution(words: list[str]) -> tuple[tuple[int, int]]:
+def length_distribution(words: Iterable[str]) -> tuple[tuple[int, int], ...]:
     token_length_counts = Counter(len(word) for word in words)
-    return tuple(sorted(token_length_counts.items()))  # type: ignore
+    max_length = max(len(word) for word in words)
+
+    # Create complete distribution from 0 to max_length
+    complete_counts = [
+        (length, token_length_counts.get(length, 0)) for length in range(max_length + 1)
+    ]
+
+    return tuple(complete_counts)
 
 
 def all_pos(
@@ -180,6 +212,14 @@ def all_pos(
     return indexes
 
 
+@dataclass
+class PositionDistribution:
+    positions: list[float]
+
+    def avg(self) -> float:
+        return sum(self.positions) / len(self.positions) if self.positions else 0.0
+
+
 # This can tell you how many characters into a string something is
 # But what if I want to know how many words into a line a word is
 # Or how many lines into a page
@@ -191,7 +231,7 @@ def position_distribution(
     word_mode: bool = False,
     normalize: bool = True,
     average: bool = False,
-) -> dict[str, list[int | float] | int | float]:
+) -> dict[str, PositionDistribution]:
     """
     Find all positions of each item in items within the list of sequences.
     """
@@ -225,17 +265,21 @@ def position_distribution(
                     pos /= len(seq)
                 results[item].append(pos)
 
-    # Drop items with no matches
-    results = {k: v for k, v in results.items() if v}
+    # Drop items with no matches, convert to struct
+    results = {k: PositionDistribution(v) for k, v in results.items() if v}
 
-    if average:
-        results = {k: sum(v) / len(v) for k, v in results.items()}
-        ordered = {
-            k: results[k] for k in items if k in results
-        }  # preserve original order
-        results = ordered
-    else:
-        # Sort descending by number of occurrences
-        results = dict(sorted(results.items(), key=lambda x: len(x[1]), reverse=True))
+    # Sort descending by number of occurrences
+    results = dict(
+        sorted(results.items(), key=lambda x: len(x[1].positions), reverse=True)
+    )
 
     return results  # type: ignore
+
+
+def levenshtein_distance(s1: str, s2: str) -> int:
+    """Calculate Levenshtein distance using difflib."""
+    matcher = SequenceMatcher(None, s1, s2)
+    similarity = matcher.ratio()
+    # Convert to approximate edit distance
+    max_len = max(len(s1), len(s2))
+    return int(max_len * (1 - similarity))

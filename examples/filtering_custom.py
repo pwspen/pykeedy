@@ -1,5 +1,5 @@
 from pykeedy import VMS, LocusProp as Prop
-from pykeedy.datastructures import Manuscript
+from pykeedy.datastructures import IVTFFManuscript
 
 # If you want to do more complex filtering / analysis, you can get the full Manuscript object
 vms = VMS.get()
@@ -38,7 +38,7 @@ print(
 
 
 # Create new Manuscript objects with list of Locus
-voynich_b = Manuscript(
+voynich_b = IVTFFManuscript(
     loci=[loc for loc in vms.loci if loc.currier_language == Prop.CurrierLanguage.B]
 )
 
@@ -71,7 +71,7 @@ for locus in VMS.get().loci:
     if has_all_include and not has_any_exclude and long_enough:
         match_loci.append(locus)
 
-text = Manuscript(loci=match_loci).to_text()
+text = IVTFFManuscript(loci=match_loci).to_text()
 
 
 # The IVTFF string code for a given property can be turned into the property itself:

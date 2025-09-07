@@ -130,3 +130,4 @@ Issues & PRs welcome!
 - basic testing suite
 - support for bitrans rulefiles
 - encoding scorer (ambiguity, reconstruction, simplicity, match to VMS)
+- ambiguous outputs for greshko_decrypt

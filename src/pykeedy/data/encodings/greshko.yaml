@@ -1,6 +1,16 @@
 encoding: # One per file
   name: greshko_202507
 
+  # This corresponds to the ordering of each letter's list
+  # So the lengths must match
+  # Most tables have the same odds in each slot
+  table_odds: [[5, 2, 2, 2, 1, 1], [5, 2, 2, 2, 1, 1], [5, 2, 2, 2, 1, 1]]
+
+  # [unigram_odds, bigram_odds]
+  # This and above are normalized, so [1, 1] is the same as [5, 5] - both 50/50 odds
+  # This must match the number of tables - 3 for unigram + bigram
+  ngram_odds: [1, 1]
+
   # Mandatory table names:
   # unigram
   # bigram_prefix, bigram_suffix
@@ -17,8 +27,8 @@ encoding: # One per file
     i: [shedy, qokedy, shey, otedy, raiin, qotedy]
     l: [qokal, okal, otal, saiin, qotal, olkal]
     m: [qokar, okar, otar, sain, qotar, olkar]
-    n: [daiin, dal, dain, y, dair, dam]
-    o: [aiin, al, ain, dy, air, am]
+    n: [daiin, dal, dain, dy, dair, dam]
+    o: [aiin, al, ain, y, air, am]
     p: [qoky, oky, oty, sheody, qoty, olky]
     q: [qokol, okol, otol, shody, qotol, olkol]
     r: [qokeedy, okeedy, oteedy, sheol, qoteedy, olkeedy]
@@ -29,65 +39,51 @@ encoding: # One per file
     x: [qokor, okor, otor, shaiin, qotor, olkor]
     y: [qokdy, okdy, otdy, shain, qotdy, olkdy]
     z: [qokeeedy, okeeedy, oteeedy, sheeey, qoteeedy, olkeeedy]
-
   bigram_prefix:
-    a: [k, yt, olch, tch, op, sor]
-    b: [qockh, qocth, cph, ofch, es, x]
-    c: [qo, dsh, sch, qolk, q, olt]
-    d: [dch, ody, aiir, dar, daly, aly]
-    e: [ch, yk, opch, lch, kch, chcth]
-    f: [ary, dair, da, om, f, dk]
-    g: [oiin, ols, ssh, dary, orch, opsh]
-    h: [dor, qoch, os, qokch, ockh, soiin]
-    i: [sh, ok, ol, ych, okch, tsh]
-    l: [or, chckh, s, al, qotch, dyk]
-    m: [lsh, dol, p, otch, y, ls]
-    n: [t, od, ar, sol, och, otsh]
-    o: [qok, pch, dal, ksh, ykch, lt]
-    p: [cth, sair, fch, qor, qolch, lpch]
-    q: [ypch, of, shckh, psh, sar, dyt]
-    r: [lk, olsh, sal, ckh, ytch, octh]
-    s: [ot, qopch, oly, shcth, dl, d]
-    t: [r, qot, olk, ysh, qop, qol]
-    u: [l, o, lkch, rch, qoksh, qofch]
-    v: [aiiin, solk, oksh, chcph, osh, ly]
-    x: [solch, qolsh, rsh, air, ory, lfch]
-    y: [qotsh, sok, olpch, daiir, sk, ail]
-    z: [oiiin, do, chcfh, sy, ry, so]
-
+    a: [sh, yt, olch, ls, chckh, al]
+    b: [dol, qolch, dor, octh, psh, ary]
+    c: [lch, tsh, y, och, qofch, olt]
+    d: [o, dal, otsh, dar, qol, sair]
+    e: [ch, ok, ol, qo, dsh, lsh]
+    f: [shckh, rsh, ly, osh, qotsh, dair]
+    g: [cph, solch, ssh, orch, sy, dyt]
+    h: [qotch, oiin, aly, qoch, ory, qocth]
+    i: [k, yk, qot, ych, sal, olsh]
+    l: [cth, ypch, sch, ykch, qokch, ockh]
+    m: [l, s, shcth, aiiin, q, d]
+    n: [opch, kch, okch, oly, aiir, os]
+    o: [r, lkch, lt, ody, solk, oksh]
+    p: [dch, qoksh, qolk, ofch, qor, chcph]
+    q: [dl, of, dary, es, air, oiiin]
+    r: [t, tch, qopch, ysh, qop, otch]
+    s: [lk, or, sol, chcth, ytch, ksh]
+    t: [qok, pch, od, ar, rch, sor]
+    u: [ot, olk, p, op, ckh, fch]
+    v: [qockh, daly, sar, dyk, da, soiin]
+    x: [lpch, f, do, qolsh, dk, x]
+    y: [ry, sok, olpch, opsh, sk, ail]
+    z: [ols, lfch, om, daiir, so, chcfh]
   bigram_suffix:
-    a: [dy, al, o, ed, edain, od]
-    b: [dor, oiiin, g, eees, sy, eda]
-    c: [or, edal, e, as, edor, ory]
-    d: [daiin, eear, edair, oy, eom, eaiin]
-    e: [edy, ain, ody, eo, ees, dar]
-    f: [daly, do, als, eeeos, ealy, oin]
-    g: [a, aiis, eeeo, eesy, edaiiin, eedo]
-    h: [dol, ols, eoy, esy, sd, eeaiin]
-    i: [aiin, eedy, am, eeey, os, dain]
-    l: [eor, m, d, eos, ee, daiiin]
-    m: [edaiin, aly, eeol, dam, edam, eel]
-    n: [ar, edar, ear, dal, dair, eeal]
-    o: [y, eol, oiin, aiiin, edol, eedal]
-    p: [es, eedaiin, eeos, er, eedain, edo]
-    q: [aiir, sdy, eeod, iin, eeoy, ery]
-    r: [ey, eed, s, ary, eedar, aim]
-    s: [eey, eeody, eeor, oly, eeed, eam]
-    t: [eody, air, l, eal, eod, ail]
-    u: [ol, eeo, r, eeedy, an, eoly]
-    v: [om, eain, ais, eeeody, eer, eeam]
-    x: [saiin, sairy, iiin, eols, eedam, yr]
-    y: [ch, osy, yl, dl, ry, alsy]
-    z: [ady, ok, eds, iir, in, eory]
-
-  # This corresponds to the ordering of each letter's list
-  # So the length must match
-  # It can also be one length-matched list per slot,
-  # for slot-specific odds
-  # example: [[3, 2, 1], [5, 3, 1], [2, 1, 1]] (where each letter has 3 encodings)
-  table_odds: [5, 2, 2, 2, 1, 1]
-
-  # [unigram_odds, bigram_odds]
-  # This and above are normalized, so [1, 1] is the same as [5, 5] - both 50/50 odds
-  # This must match the number of tables - 3 for unigram + bigram
-  ngram_odds: [1, 1]
+    a: [aiin, eol, air, ed, dal, aly]
+    b: [l, ory, oy, eoy, eeed, eom]
+    c: [eeey, r, aiiin, aiir, ail, esy]
+    d: [eeody, eeos, dol, oly, eeeody, a]
+    e: [edy, ey, ol, ain, ear, dar]
+    f: [eam, iiin, daiiin, do, eel, sairy]
+    g: [g, eols, saiin, eeam, ok, iir]
+    h: [eedal, er, eaiin, eeoy, eedam, eer]
+    i: [dy, eody, eor, o, od, m]
+    l: [es, eedaiin, edol, edair, daly, eesy]
+    m: [ody, edain, dain, eedar, dor, eeal]
+    n: [al, d, oiin, eod, eees, eain]
+    o: [or, eos, eeedy, edam, dair, aim]
+    p: [edar, as, eeod, e, eoly, ais]
+    q: [iin, als, edaiiin, ols, ealy, oiiin]
+    r: [eedy, daiin, s, eeor, dam, eear]
+    s: [ar, eeo, edal, eed, an, os]
+    t: [y, am, edaiin, ees, ary, om]
+    u: [eey, eo, eeol, eal, ee, eedain]
+    v: [edor, sy, sdy, sd, aiis, eeeo]
+    x: [edo, eeeos, ery, ch, dl, eedo]
+    y: [oin, eory, osy, yl, ry, yr]
+    z: [eeaiin, eds, eda, ady, in, alsy]

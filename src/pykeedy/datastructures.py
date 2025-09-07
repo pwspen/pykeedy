@@ -6,13 +6,13 @@ import importlib.resources as resources
 from functools import lru_cache
 
 
-class LocusPropType:
+class LocusPropType(Enum):
     # A way to tell that something is a filterable property
     pass
 
 
 class LocusProp:
-    class Location(LocusPropType, Enum):
+    class Location(LocusPropType):
         UnrelatedToPrev = "@"
         BelowPrev = "+"
         BelowAndLeftOfPrev = "*"
@@ -22,7 +22,7 @@ class LocusProp:
         AboveAndRightOfPrev = "/"
         DoesNotExist = "!"
 
-    class Type(LocusPropType, Enum):
+    class Type(LocusPropType):
         # P: Linear text in paragraphs
         ParagraphLeftJustified = "P0"
         ParagraphNotLeftJustified = "P1"
@@ -51,7 +51,7 @@ class LocusProp:
         RadialInwards = "Ri"
         RadialOutwards = "Ro"
 
-    class IllustrationType(LocusPropType, Enum):
+    class IllustrationType(LocusPropType):
         Astronomical = "A"
         Biological = "B"
         Cosmological = "C"
@@ -61,11 +61,11 @@ class LocusProp:
         TextOnly = "T"
         Zodiac = "Z"
 
-    class CurrierLanguage(LocusPropType, Enum):
+    class CurrierLanguage(LocusPropType):
         A = "A"
         B = "B"
 
-    class DavisHand(LocusPropType, Enum):
+    class DavisHand(LocusPropType):
         H1 = "1"
         H2 = "2"
         H3 = "3"
@@ -73,7 +73,7 @@ class LocusProp:
         H5 = "5"
         At = "@"
 
-    class CurrierHand(LocusPropType, Enum):
+    class CurrierHand(LocusPropType):
         C1 = "1"
         C2 = "2"
         C3 = "3"
@@ -82,7 +82,7 @@ class LocusProp:
         X = "X"
         Y = "Y"  # IVTFF format pdf and transliteration do not match - pdf claims X + Z, actual transliteration has X + Y
 
-    class ExtraneousWriting(LocusPropType, Enum):
+    class ExtraneousWriting(LocusPropType):
         ColorAnnotation = "C"
         MonthName = "M"
         Other = "O"
@@ -344,13 +344,33 @@ def to_final_text(text: str, opts: TextProcessingOptions) -> str:
 
 
 @dataclass
-class Manuscript(VMSDataclass):
+class Manuscript:
+    def to_text(self) -> str:
+        raise NotImplementedError
+
+    def to_words(self, **kwargs) -> list[str]:
+        return self.to_text(**kwargs).replace(".", " ").split()
+
+    def to_lines(self, **kwargs) -> list[str]:
+        return self.to_text(**kwargs).splitlines()
+
+
+@dataclass
+class PlainManuscript(Manuscript):
+    text: str
+
+    def to_text(self) -> str:
+        return self.text
+
+
+@dataclass
+class IVTFFManuscript(VMSDataclass, Manuscript):
     loci: list[Locus]
     source_filename: str | None = None
 
     @classmethod
     @lru_cache(maxsize=1)
-    def from_file(cls, text: str, fname: str) -> "Manuscript":
+    def from_file(cls, text: str, fname: str) -> "IVTFFManuscript":
         # Expects text directly from IVTFF file.
         # Split by page and then create Page for each.
 
@@ -413,17 +433,8 @@ class Manuscript(VMSDataclass):
             pagetext[i] = ptext
         return pagetext
 
-    def to_lines(self, **kwargs) -> list[str]:
-        return self.to_text(**kwargs).splitlines()
 
-    def to_words(self, **kwargs) -> list[str]:
-        words = []
-        for line in self.to_lines(**kwargs):
-            words.extend(line.split("."))
-        return words
-
-
-VMSObject = Manuscript | Locus
+VMSObject = IVTFFManuscript | Locus
 
 
 # We want to be able to easily take any combination and turn it all into text.
@@ -448,14 +459,14 @@ class VMS:
     @classmethod
     def from_loci(
         cls, loci: list[Locus], source_filename: str | None = None
-    ) -> Manuscript:
-        return Manuscript(loci=loci, source_filename=source_filename)
+    ) -> IVTFFManuscript:
+        return IVTFFManuscript(loci=loci, source_filename=source_filename)
 
     @classmethod
-    def filter(cls, props: Sequence[LocusPropType] | LocusPropType) -> Manuscript:
+    def filter(cls, props: Sequence[LocusPropType] | LocusPropType) -> IVTFFManuscript:
         if isinstance(props, LocusPropType):
             props = [props]
-        filt_props = [
+        filt_props: list[LocusPropType] = [
             prop for prop in props if issubclass(prop.__class__, LocusPropType)
         ]
 
@@ -474,7 +485,7 @@ class VMS:
                 f"  (properties: {', '.join(list(f'LocusProp.{p.__class__.__name__ + "." + p.name}' for p in filt_props)) if filt_props else 'None'} )"
             )  # type: ignore
 
-        return Manuscript(loci=loci, source_filename=vms.source_filename)
+        return IVTFFManuscript(loci=loci, source_filename=vms.source_filename)
 
     @classmethod
     def to_words(cls, **kwargs) -> list[str]:
@@ -493,7 +504,7 @@ class VMS:
         return cls.get().to_text(**kwargs)
 
     @classmethod
-    def get(cls, basic_ver: bool = True) -> Manuscript:
+    def get(cls, basic_ver: bool = True) -> IVTFFManuscript:
         if not basic_ver:
             print(
                 "Warning: Support for extended EVA very untested, please report any issues"
@@ -507,5 +518,5 @@ class VMS:
         with path.open("r", encoding="utf-8") as f:
             raw = f.read()
 
-        vms = Manuscript.from_file(raw, path.name)
+        vms = IVTFFManuscript.from_file(raw, path.name)
         return vms

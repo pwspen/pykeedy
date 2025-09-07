@@ -25,7 +25,7 @@ all_pos = position_distribution(letters, word_tokens, normalize=True, average=Fa
 # This now returns all positions: {'a': [0.1, 0.3, 0.2 ...], 'b': [1.0, 1.0] ...}
 
 # Which we can easily turn back into an average but remove things with less than 20 occurences
-many_occurs = {k: sum(v) / len(v) for k, v in all_pos.items() if len(v) > 200}
+many_occurs = {k: v.avg() for k, v in all_pos.items() if len(v.positions) > 200}
 
 barplot(
     many_occurs,

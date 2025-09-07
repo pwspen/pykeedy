@@ -9,7 +9,7 @@ from pykeedy.analysis import (
     position_distribution,
 )
 from pykeedy.crypt import naibbe_encrypt
-from pykeedy.datastructures import Manuscript
+from pykeedy.datastructures import IVTFFManuscript
 from pykeedy.utils import PlainManuscript
 from datetime import datetime
 import time
@@ -53,7 +53,7 @@ def cross_manuscript(
 def per_manuscript(
     name: str,
     i: int,
-    ms: Manuscript | PlainManuscript,
+    ms: IVTFFManuscript | PlainManuscript,
     output_dir: str,
     run_ngrams: bool,
     ngram_max_n: int,
@@ -154,7 +154,7 @@ def per_manuscript(
 
 
 def run_full_analysis(
-    voynich: Manuscript,
+    voynich: IVTFFManuscript,
     comparison_texts_dir: str | None = None,
     comparison_text_names: list[str] | None = None,
     output_dir: str = "full_analysis_results",
@@ -180,10 +180,10 @@ def run_full_analysis(
         texts = load_corpus(
             from_dir=comparison_texts_dir,
             names=comparison_text_names,
-            give_objects=True,
+            return_objects=True,
         )
     else:
-        texts = load_corpus(names=comparison_text_names, give_objects=True)
+        texts = load_corpus(names=comparison_text_names, return_objects=True)
     texts["VMS"] = voynich
 
     if run_cross_manuscript:

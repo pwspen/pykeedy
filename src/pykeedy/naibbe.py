@@ -11,12 +11,11 @@ class NaibbeEncoding(BaseModel):
     ngram_slot_tables: list[
         dict[str, list[str]]
     ]  # [unigram, bigram_prefix, bigram_suffix, ...] - order extremely important for lists!
-    table_odds: (
-        list[float] | list[list[float]]
-    )  # e.g. [5, 2, 2, 2, 1, 1] - order corresponding to lists in ngram_slot_tables
-    ngram_odds: list[float] | None = (
-        None  # [1, 1] for equal odds unigram + bigram - order is ascending (first position is unigram, second bigram)
-    )
+    table_odds: list[
+        list[float]
+    ]  # e.g. [5, 2, 2, 2, 1, 1] - order corresponding to lists in ngram_slot_tables
+    ngram_odds: list[float]
+    # [1, 1] for equal odds unigram + bigram - order is ascending (first position is unigram, second bigram)
 
     VALID_TABLES: ClassVar[tuple] = (
         "unigram",
@@ -29,8 +28,11 @@ class NaibbeEncoding(BaseModel):
 
     @model_validator(mode="after")
     def check_encoding(self) -> "NaibbeEncoding":
-        if self.ngram_odds is None:
-            self.ngram_odds = [1.0]
+        # Allow for initialization with one table_odds list for all slots
+        if isinstance(self.table_odds[0], float):
+            table: list[float] = self.table_odds.copy()  # type: ignore
+            self.table_odds = [table for _ in range(len(self.ngram_slot_tables))]
+
         num_ngrams = len(self.ngram_odds)
         num_tables = num_ngrams * (num_ngrams + 1) // 2
         # one slot per table
@@ -70,20 +72,16 @@ class NaibbeEncoding(BaseModel):
 
             if i == 0:
                 num_encodings = len(list(tab.values())[0])
-                if isinstance(
-                    self.table_odds[0], float
-                ):  # single common odds list for all slots
-                    if len(self.table_odds) != num_encodings:
-                        raise ValueError(
-                            "If table_odds is a single list, it must have the same length as the number of encodings per character"
-                        )
-                elif isinstance(
-                    self.table_odds[0], list
-                ):  # leaving the door open for slots having different numbers of encodings in future (len would be checked)
-                    if len(self.table_odds[i]) != len(self.ngram_slot_tables):  # type: ignore
-                        raise ValueError(
-                            "If table_odds is a list of lists, it must have the same length as ngram_tables"
-                        )
+
+                # this only checks equality between the first table for each collection of tables
+                # fix later to check all
+                len_table_odds = len(self.table_odds[i])
+                len_ngram_slot_tables = len(list(self.ngram_slot_tables[0].values())[0])
+                if len_table_odds != len_ngram_slot_tables:  # type: ignore
+                    raise ValueError(
+                        "Mismatch between table_odds lengths and ngram_tables lengths:"
+                        f"{len_table_odds} vs {len_ngram_slot_tables}"  # type: ignore
+                    )
             else:
                 if len(list(tab.values())[0]) != num_encodings:
                     raise ValueError(
@@ -136,11 +134,11 @@ class NaibbeEncoding(BaseModel):
     def to_file(self, filepath: Path) -> None:
         if self.name is None:
             raise ValueError("Encoding must have a name to be saved to file")
-        data = {
-            "name": self.name,
-            "table_odds": self.table_odds,
-            "ngram_odds": self.ngram_odds,
-        }
+        data = dict()
+        data["name"] = self.name
+        data["table_odds"] = self.table_odds
+        data["ngram_odds"] = self.ngram_odds
+
         valid_tables = (
             "unigram",
             "bigram_prefix",
@@ -154,7 +152,9 @@ class NaibbeEncoding(BaseModel):
                 data[tabname] = self.ngram_slot_tables[i]
 
         with open(filepath, "w") as f:
-            yaml.dump({"encoding": data}, f)
+            # dont sort keys: save to file in order added
+            # flow style: save lists like listname: [val1, val2], but dont compact everything
+            yaml.dump({"encoding": data}, f, sort_keys=False, default_flow_style=None)
 
     def print(self) -> None:
         print("NaibbeEncoding(")
@@ -280,6 +280,25 @@ class NaibbeEncoding(BaseModel):
             raise ValueError("Only up to trigram supported")
 
 
+def ConstructNaibbeEncoding(
+    ngram_slot_tables: list[dict[str, list[str]]],
+    table_odds: list[list[float]] | list[float],
+    ngram_odds: list[float] | None = None,
+    name: str | None = None,
+) -> NaibbeEncoding:
+    if ngram_odds is None:
+        ngram_odds = [1.0]
+    if isinstance(table_odds, list) and all(isinstance(x, float) for x in table_odds):
+        table: list[float] = table_odds.copy()  # type: ignore
+        table_odds = [table for _ in range(len(ngram_slot_tables))]
+    return NaibbeEncoding(
+        ngram_slot_tables=ngram_slot_tables,
+        table_odds=table_odds,  # type: ignore - our check should ensure correctness here
+        ngram_odds=ngram_odds if ngram_odds is not None else [1.0],
+        name=name,
+    )
+
+
 @lru_cache(maxsize=1)
 def get_default_encoding() -> NaibbeEncoding:
     DEFAULT_ENCODING_NAME: str = "greshko_202507"
@@ -292,6 +311,8 @@ def parse_encoding(encoding: NaibbeEncoding | str | None) -> NaibbeEncoding:
             encoding = NaibbeEncoding.from_name(encoding)
         elif encoding is None:
             encoding = get_default_encoding()
+        else:
+            raise ValueError("encoding must be NaibbeEncoding object, str, or None")
     return encoding
 
 

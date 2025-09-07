@@ -1,11 +1,19 @@
 from pykeedy.naibbe import NaibbeEncoding, parse_encoding
 import numpy as np
-from pykeedy.utils import preprocess
+from pykeedy.utils import preprocess, PlainManuscript
 import re
 
 
+# This was added instead of changing naibbe_encrypt to not break peoples code
+def naibbe_encrypt_to_object(text: str, **kwargs) -> PlainManuscript:
+    return PlainManuscript(naibbe_encrypt(text=text, **kwargs))
+
+
 def naibbe_encrypt(
-    text: str, encoding: NaibbeEncoding | str | None = None, prngseed: int | None = 42
+    text: str,
+    encoding: NaibbeEncoding | str | None = None,
+    prngseed: int | None = 42,
+    insert_newlines_every: int | None = None,
 ) -> str:
     """
     Encrypt text using some Naibbe encoding.
@@ -85,6 +93,21 @@ def naibbe_encrypt(
         i += gramsize
         encoded += word + " "
 
+    def insert_newlines(text: str, every_n_spaces: int) -> str:
+        # Find all spaces and their positions
+        spaces = [(m.start(), m.end()) for m in re.finditer(" ", text)]
+
+        # Replace every nth space
+        result = list(text)
+        for i in range(every_n_spaces - 1, len(spaces), every_n_spaces):
+            pos = spaces[i][0]
+            result[pos] = "\n"
+
+        return "".join(result)
+
+    if insert_newlines_every is not None and insert_newlines_every > 0:
+        encoded = insert_newlines(encoded, insert_newlines_every)
+
     return encoded.strip()
 
 
@@ -162,7 +185,8 @@ def greshko_decrypt(encoded: str, encoding: NaibbeEncoding | str | None = None) 
 
     def step1(vord: str) -> str | None:
         if vord in slot_lists[0]:
-            return slot_decrypt_tables[0][vord]
+            dec = slot_decrypt_tables[0][vord]
+            return dec
 
     def step2(vord: str) -> str | None:
         best = None
@@ -195,6 +219,7 @@ def greshko_decrypt(encoded: str, encoding: NaibbeEncoding | str | None = None) 
         except (IndexError, KeyError):
             return None
 
+    encoded = encoded.replace("\n", " ").strip()
     vords = encoded.split(" ")
     decoded = ""  # We add to this with each decode
     for vord in vords:  # Each word is entirely independent

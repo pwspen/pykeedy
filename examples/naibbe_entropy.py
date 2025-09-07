@@ -1,7 +1,7 @@
 from pykeedy import VMS
 from pykeedy.utils import load_corpus, scatterplot
 from pykeedy.analysis import shannon_entropy, conditional_entropy
-from pykeedy.crypt import naibbe_encrypt
+from pykeedy.crypt import naibbe_encrypt_to_object
 
 # Compute and save plots of character and conditional entropy of the VMS, comparison plaintexts, and the Naibbe encryptions of those plaintexts
 # builds on entropy_comparisons.py
@@ -12,8 +12,8 @@ plain = load_corpus()
 analyze = {}
 for name, text in plain.items():
     analyze[name] = text
-    analyze[name + "_naibbe_encoded"] = naibbe_encrypt(
-        text
+    analyze[name + "_naibbe_encoded"] = naibbe_encrypt_to_object(
+        text.to_text()
     )  # Uses Greshko encoding as default
 
 # For word-level entropy, all you have to do is change below to .to_words()

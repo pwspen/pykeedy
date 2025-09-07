@@ -1,8 +1,8 @@
 from pykeedy.crypt import naibbe_encrypt, greshko_decrypt
-from pykeedy.naibbe import NaibbeEncoding
+from pykeedy.naibbe import ConstructNaibbeEncoding
 
 # It's very easy to make your own encoding tables:
-simple_encoding = NaibbeEncoding(
+simple_encoding = ConstructNaibbeEncoding(
     ngram_slot_tables=[  # Letters can map to any string (only letters allowed as keys)
         {"a": ["x", "y"], "b": ["j", "la"], "c": ["loong", "c"]}
     ],
@@ -10,6 +10,7 @@ simple_encoding = NaibbeEncoding(
         3,
         1,
     ],  # For each letter, 3/4 chance of using first table, 1/4 chance of using second table
+    ngram_odds=[1],
 )
 # (see example naibbe_advanced.py for more information)
 

@@ -14,7 +14,7 @@ print(plain)
 # original: 'This+is!a^File\nused for Showing\nthe Functionality\nof load_corpus!'
 # Extraneous characters stripped, everything lowercased
 
-plain = load_corpus(from_dir=".", give_objects=True)
+plain = load_corpus(from_dir=".")
 # This gets us an object with methods .to_text(), .to_words(), .to_lines()
 
 book = plain["book"]
